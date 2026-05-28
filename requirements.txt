@@ -1,0 +1,27 @@
+# =============================================================================
+# Dependências do projeto — Contador de Veículos
+# =============================================================================
+# Instale com:  pip install -r requirements.txt
+#
+# Convenção de versão:
+#   ">="  significa "essa versão ou qualquer superior".
+#   Usamos faixas mínimas (e não versões fixas) pra permitir patches de
+#   segurança e dar flexibilidade ao pip resolver conflitos com dependências
+#   transitivas (em especial torch, que o ultralytics instala automaticamente).
+# =============================================================================
+
+# --- Visão computacional e processamento de vídeo ---
+opencv-python>=4.8.0      # leitura/escrita de vídeo, processamento de imagem, desenhos
+numpy>=1.24.0             # arrays multidimensionais — base de toda imagem em OpenCV
+
+# --- Deep learning (modo YOLO) ---
+# Observação: ultralytics instala torch e torchvision automaticamente como dependências.
+# Não fixamos torch aqui porque a versão correta depende do sistema operacional
+# e da presença ou não de GPU (CUDA). Deixar o ultralytics resolver é mais seguro.
+ultralytics>=8.1.0        # YOLOv8 pronto pra uso, com modelos pré-treinados em COCO
+
+# --- Interface web ---
+flask>=3.0.0              # servidor HTTP e roteamento (werkzeug vem incluso)
+
+# --- Auxiliares ---
+pillow>=10.0.0            # manipulação de imagens (conversões, salvamento de thumbnails)

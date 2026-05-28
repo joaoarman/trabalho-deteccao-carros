@@ -1,0 +1,81 @@
+{#
+    processar_yolo.html — Tela do modo YOLO (deep learning), agora funcional.
+
+    Lado esquerdo: vídeo com bounding boxes do YOLO (stream MJPEG).
+    Lado direito: contador + lista de detecções (classe + confiança),
+    ambos atualizados por polling — igual ao modo OpenCV.
+#}
+{% extends "base.html" %}
+
+{% block titulo %}YOLO · Contador de Veículos{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-processar">
+        <div>
+            <h1>Processamento — YOLOv8</h1>
+            <p>Vídeo: <strong>{{ nome_arquivo }}</strong></p>
+        </div>
+        <nav class="tabs-modo">
+            <a href="{{ url_for('processar', video_id=video_id, modo='opencv') }}">OpenCV</a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='yolo') }}" class="ativa">YOLO</a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='comparativo') }}">Comparativo</a>
+        </nav>
+    </div>
+
+    <div class="grade-processar">
+
+        {# Vídeo com bounding boxes do YOLO #}
+        <div class="painel-video">
+            <div class="video-com-canvas">
+                {% if eh_demo %}
+                    <div class="placeholder-video">
+                        <strong>YOLOv8 nano · pré-treinado em COCO</strong>
+                        <span>Faça upload de um vídeo real para ver as detecções.</span>
+                    </div>
+                {% else %}
+                    {# A <img> recebe o stream MJPEG do modo YOLO. #}
+                    <img class="stream"
+                         id="stream-video"
+                         src="{{ url_for('stream', video_id=video_id, modo='yolo') }}"
+                         alt="Vídeo sendo processado pelo YOLO">
+                {% endif %}
+            </div>
+            <div class="descricao-etapa">
+                <strong>Detecção em uma passada</strong> —
+                <span>o YOLO recebe o frame inteiro, divide em grid e prevê bounding boxes + classes simultaneamente. NMS remove detecções redundantes.</span>
+            </div>
+        </div>
+
+        {# Painel lateral: contador + lista de detecções #}
+        <aside class="painel-lateral">
+
+            <div class="contador">
+                <h3>Veículos contados</h3>
+                <div class="contador-numero" id="contador-total">0</div>
+                <div class="contador-detalhe" id="contador-detalhe">0 por minuto</div>
+                {% if not eh_demo %}
+                <a href="{{ url_for('configurar', video_id=video_id) }}"
+                   class="botao botao-secundario">↻ Alterar área e zerar</a>
+                {% endif %}
+            </div>
+
+            <div class="lista-deteccoes">
+                <h3>Detecções no frame atual</h3>
+                {# Preenchida dinamicamente por JS (inicializarYOLO). #}
+                <div id="lista-deteccoes">
+                    <p class="deteccoes-vazio">Aguardando detecções…</p>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        window.VIDEO_ID = {{ video_id|tojson }};
+        window.EH_DEMO = {{ eh_demo|tojson }};
+        inicializarYOLO();
+    </script>
+{% endblock %}

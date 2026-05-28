@@ -1,0 +1,134 @@
+{#
+    processar_opencv.html — Modo OpenCV clássico, agora funcional.
+
+    O placeholder do vídeo foi substituído por uma <img> que recebe o stream
+    MJPEG gerado pelo backend. O navegador trata isso como uma imagem que
+    "atualiza sozinha" — exatamente o que queremos.
+
+    Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
+    próximo frame que o servidor produz, o display já reflete a nova etapa.
+    O contador é atualizado por polling em /api/contador/<id>.
+#}
+{% extends "base.html" %}
+
+{% block titulo %}OpenCV · Contador de Veículos{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-processar">
+        <div>
+            <h1>Processamento — OpenCV clássico</h1>
+            <p>Vídeo: <strong>{{ nome_arquivo }}</strong></p>
+        </div>
+        <nav class="tabs-modo">
+            <a href="{{ url_for('processar', video_id=video_id, modo='opencv') }}" class="ativa">OpenCV</a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='yolo') }}">YOLO</a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='comparativo') }}">Comparativo</a>
+        </nav>
+    </div>
+
+    <div class="grade-processar">
+
+        {# ============ VÍDEO PROCESSADO (STREAM) ============ #}
+        <div class="painel-video">
+            <div class="video-com-canvas">
+                {% if eh_demo %}
+                    <div class="placeholder-video">
+                        <strong>Modo demo</strong>
+                        <span>Sem vídeo real para processar. Faça upload na tela inicial.</span>
+                    </div>
+                {% else %}
+                    {#
+                        A <img> recebe o stream multipart/x-mixed-replace.
+                        O navegador troca o conteúdo automaticamente a cada
+                        novo JPEG enviado pelo servidor — sem precisar de JS.
+                    #}
+                    <img class="stream"
+                         id="stream-video"
+                         src="{{ url_for('stream', video_id=video_id, modo='opencv') }}"
+                         alt="Vídeo sendo processado">
+                {% endif %}
+            </div>
+            <div class="descricao-etapa">
+                <strong id="descricao-etapa-titulo">1. Frame original</strong> —
+                <span id="descricao-etapa-texto">o vídeo cru, sem nenhum processamento aplicado. Serve como referência pras outras etapas.</span>
+            </div>
+        </div>
+
+        {# ============ PAINEL LATERAL ============ #}
+        <aside class="painel-lateral">
+
+            {# Contador (atualizado via polling) #}
+            <div class="contador">
+                <h3>Veículos contados</h3>
+                <div class="contador-numero" id="contador-total">0</div>
+                <div class="contador-detalhe" id="contador-detalhe">0 por minuto</div>
+                {#
+                    Volta pra seleção da área. Ao reabrir o modo OpenCV um novo
+                    stream começa e o contador é recriado — a contagem zera.
+                    Atalho de teclado: tecla "A".
+                #}
+                {% if not eh_demo %}
+                <a href="{{ url_for('configurar', video_id=video_id) }}"
+                   class="botao botao-secundario" id="botao-alterar-area">
+                    ↻ Alterar área e zerar (A)
+                </a>
+                {% endif %}
+            </div>
+
+            {# Lista de etapas — clicar troca o display do stream ao vivo. #}
+            <div class="lista-etapas">
+                <h3>Etapas do pipeline</h3>
+
+                <div class="etapa-item ativa" data-etapa="1"
+                     data-titulo="Frame original"
+                     data-descricao="o vídeo cru, sem nenhum processamento aplicado. Serve como referência pras outras etapas.">
+                    <span class="etapa-numero">1</span>
+                    <span class="etapa-texto">Frame original</span>
+                </div>
+
+                <div class="etapa-item" data-etapa="2"
+                     data-titulo="Background Subtraction"
+                     data-descricao="o algoritmo MOG2 modela o fundo como mistura de gaussianas; pixels que não encaixam viram branco (movimento).">
+                    <span class="etapa-numero">2</span>
+                    <span class="etapa-texto">Background Subtraction</span>
+                </div>
+
+                <div class="etapa-item" data-etapa="3"
+                     data-titulo="Morfologia"
+                     data-descricao="opening (erosão + dilatação) remove ruído; closing fecha buracos dentro de cada objeto.">
+                    <span class="etapa-numero">3</span>
+                    <span class="etapa-texto">Morfologia</span>
+                </div>
+
+                <div class="etapa-item" data-etapa="4"
+                     data-titulo="Contornos"
+                     data-descricao="cv2.findContours encontra as curvas fechadas; filtramos por área (mínima e máxima) pra pegar só veículos.">
+                    <span class="etapa-numero">4</span>
+                    <span class="etapa-texto">Contornos detectados</span>
+                </div>
+
+                <div class="etapa-item" data-etapa="5"
+                     data-titulo="Tracking + Contagem"
+                     data-descricao="o centroid tracker dá um ID por veículo; quando o centroide cruza a linha, o contador incrementa.">
+                    <span class="etapa-numero">5</span>
+                    <span class="etapa-texto">Tracking + Contagem</span>
+                </div>
+
+                <div class="navegacao-etapas">
+                    <button type="button" class="botao-seta" id="etapa-anterior">← Anterior</button>
+                    <button type="button" class="botao-seta" id="etapa-proxima">Próxima →</button>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        window.VIDEO_ID = {{ video_id|tojson }};
+        window.EH_DEMO = {{ eh_demo|tojson }};
+        inicializarPipelineOpenCV();
+    </script>
+{% endblock %}

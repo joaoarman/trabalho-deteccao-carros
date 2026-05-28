@@ -1,0 +1,629 @@
+/* ==========================================================================
+   style.css — Estilos do Contador de Veículos
+
+   Organização do arquivo:
+     1. Variáveis (cores, espaçamentos, raios)
+     2. Reset e estilos globais
+     3. Layout (container, header, footer)
+     4. Componentes (card, botão, form, alertas)
+     5. Páginas específicas (upload, configurar, processar)
+   ========================================================================== */
+
+
+/* 1. VARIÁVEIS GLOBAIS ----------------------------------------------------- */
+/* :root é o "topo" da árvore CSS. Variáveis declaradas aqui ficam acessíveis
+   no documento inteiro via var(--nome). Trocar uma cor aqui muda em todo o
+   site — facilita manter tema consistente. */
+:root {
+    --cor-fundo: #f7f8fb;
+    --cor-card: #ffffff;
+    --cor-texto: #0f172a;
+    --cor-texto-suave: #64748b;
+    --cor-texto-muito-suave: #94a3b8;
+
+    --cor-primaria: #2563eb;
+    --cor-primaria-hover: #1d4ed8;
+    --cor-primaria-suave: #eff6ff;
+
+    --cor-borda: #e2e8f0;
+    --cor-borda-forte: #cbd5e1;
+
+    --cor-sucesso: #059669;
+    --cor-sucesso-suave: #d1fae5;
+    --cor-aviso: #d97706;
+    --cor-aviso-suave: #fef3c7;
+
+    --raio-pequeno: 8px;
+    --raio: 12px;
+    --raio-grande: 16px;
+
+    --sombra-suave: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.05);
+    --sombra: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    --sombra-forte: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -3px rgba(15, 23, 42, 0.04);
+
+    --transicao: all 0.15s ease;
+}
+
+
+/* 2. RESET E ESTILOS GLOBAIS ---------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;     /* padding e border não estouram o width */
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a { color: var(--cor-primaria); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3 { font-weight: 700; line-height: 1.25; letter-spacing: -0.02em; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.125rem; }
+
+p { color: var(--cor-texto-suave); }
+
+
+/* 3. LAYOUT --------------------------------------------------------------- */
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.cabecalho {
+    background: var(--cor-card);
+    border-bottom: 1px solid var(--cor-borda);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.cabecalho-conteudo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--cor-texto);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+.logo:hover { text-decoration: none; opacity: 0.85; }
+.logo-icone { color: var(--cor-primaria); }
+
+.cabecalho-info {
+    font-size: 0.85rem;
+    color: var(--cor-texto-muito-suave);
+}
+
+.conteudo {
+    flex: 1;
+    padding: 2.5rem 1.5rem;
+}
+
+.rodape {
+    border-top: 1px solid var(--cor-borda);
+    background: var(--cor-card);
+    padding: 1.25rem 0;
+    margin-top: auto;
+}
+.rodape-conteudo {
+    text-align: center;
+    color: var(--cor-texto-muito-suave);
+    font-size: 0.85rem;
+}
+
+
+/* 4. COMPONENTES --------------------------------------------------------- */
+
+/* CARD — bloco branco com sombra suave, base visual de toda página */
+.card {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 2rem;
+    box-shadow: var(--sombra-suave);
+}
+
+/* BOTÃO primário (ação principal) */
+.botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--cor-primaria);
+    color: white;
+    border: none;
+    border-radius: var(--raio-pequeno);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicao);
+    font-family: inherit;
+}
+.botao:hover { background: var(--cor-primaria-hover); text-decoration: none; }
+.botao:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* BOTÃO secundário (ações menos importantes) */
+.botao-secundario {
+    background: var(--cor-card);
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-borda-forte);
+}
+.botao-secundario:hover { background: var(--cor-fundo); }
+
+/* ALERTAS (mensagens flash do Flask) */
+.alertas { margin-bottom: 1.5rem; }
+.alerta {
+    background: var(--cor-aviso-suave);
+    color: var(--cor-aviso);
+    padding: 0.75rem 1rem;
+    border-radius: var(--raio-pequeno);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    border: 1px solid #fde68a;
+}
+
+
+/* 5. PÁGINAS ESPECÍFICAS ------------------------------------------------- */
+
+/* ---------- TELA DE UPLOAD ---------- */
+.hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+.hero p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Caixa de upload com efeito de drag-and-drop visual.
+   display: block é obrigatório porque <label> é inline por padrão — sem ele
+   o elemento não preenche a largura do card e o layout quebra. */
+.area-upload {
+    display: block;
+    border: 2px dashed var(--cor-borda-forte);
+    border-radius: var(--raio);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transicao);
+    background: var(--cor-fundo);
+}
+.area-upload:hover,
+.area-upload.arrastando {
+    border-color: var(--cor-primaria);
+    background: var(--cor-primaria-suave);
+}
+.area-upload-icone {
+    color: var(--cor-primaria);
+    margin-bottom: 1rem;
+}
+.area-upload-titulo {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--cor-texto);
+    margin-bottom: 0.4rem;
+}
+.area-upload-detalhe {
+    color: var(--cor-texto-suave);
+    font-size: 0.9rem;
+}
+.area-upload input[type="file"] {
+    display: none;             /* esconde o input feio do navegador */
+}
+
+.nome-arquivo-selecionado {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--cor-sucesso-suave);
+    color: var(--cor-sucesso);
+    border-radius: var(--raio-pequeno);
+    font-size: 0.9rem;
+    display: none;             /* aparece via JS quando o usuário escolhe arquivo */
+}
+.nome-arquivo-selecionado.visivel { display: block; }
+
+.acoes-upload {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.recursos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 3rem;
+}
+.recurso {
+    padding: 1.25rem;
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+}
+.recurso h3 {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    color: var(--cor-primaria);
+}
+.recurso p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+
+/* ---------- TELA DE CONFIGURAR (ROI + escolha de modo) ---------- */
+.painel-configurar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.painel-video {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    overflow: hidden;
+}
+.video-com-canvas {
+    position: relative;
+    background: #0f172a;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cor-texto-muito-suave);
+}
+.video-com-canvas canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+.video-com-canvas video,
+.video-com-canvas img.stream {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;       /* mantém proporção, deixa barras pretas se preciso */
+    background: #0f172a;
+    display: block;
+}
+.status-roi {
+    font-size: 0.8rem;
+    color: var(--cor-texto-muito-suave);
+    margin-right: 0.5rem;
+}
+.status-roi.definida { color: var(--cor-sucesso); font-weight: 600; }
+.video-com-canvas .placeholder-video {
+    text-align: center;
+    padding: 2rem;
+    color: #cbd5e1;
+}
+.video-com-canvas .placeholder-video strong {
+    color: white;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.barra-info-video {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--cor-borda);
+    font-size: 0.875rem;
+    color: var(--cor-texto-suave);
+}
+.barra-info-video strong { color: var(--cor-texto); }
+
+.acoes-roi {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.titulo-secao {
+    margin: 2rem 0 1rem;
+}
+
+.opcoes-modo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+.opcao-modo {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--transicao);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.opcao-modo:hover {
+    border-color: var(--cor-primaria);
+    box-shadow: var(--sombra);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+.opcao-modo .icone {
+    color: var(--cor-primaria);
+    margin-bottom: 0.25rem;
+}
+.opcao-modo h3 { color: var(--cor-texto); }
+.opcao-modo p { font-size: 0.875rem; margin: 0; }
+
+
+/* ---------- TELA DE PROCESSAMENTO ---------- */
+.cabecalho-processar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.cabecalho-processar h1 { font-size: 1.5rem; }
+.cabecalho-processar p { font-size: 0.9rem; }
+
+.tabs-modo {
+    display: inline-flex;
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pequeno);
+    padding: 0.25rem;
+    gap: 0.25rem;
+}
+.tabs-modo a {
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--cor-texto-suave);
+    transition: var(--transicao);
+}
+.tabs-modo a:hover { background: var(--cor-fundo); text-decoration: none; }
+.tabs-modo a.ativa {
+    background: var(--cor-primaria);
+    color: white;
+}
+
+/* Grid principal das telas de processamento: vídeo à esquerda, painel à direita */
+.grade-processar {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.25rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .grade-processar { grid-template-columns: 1fr; }
+}
+
+.painel-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Cartão do contador */
+.contador {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 1.25rem;
+}
+.contador h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cor-texto-suave);
+    margin-bottom: 0.5rem;
+}
+.contador-numero {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--cor-primaria);
+    margin-bottom: 0.5rem;
+}
+.contador-detalhe {
+    font-size: 0.85rem;
+    color: var(--cor-texto-suave);
+}
+
+/* Lista de etapas (modo OpenCV) */
+.lista-etapas {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 0.5rem;
+}
+.lista-etapas h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cor-texto-suave);
+    padding: 0.75rem 0.75rem 0.5rem;
+    margin: 0;
+}
+.etapa-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--raio-pequeno);
+    cursor: pointer;
+    transition: var(--transicao);
+    color: var(--cor-texto);
+    margin-bottom: 0.15rem;
+}
+.etapa-item:hover { background: var(--cor-fundo); }
+.etapa-item.ativa {
+    background: var(--cor-primaria-suave);
+    color: var(--cor-primaria);
+    font-weight: 600;
+}
+.etapa-numero {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--cor-borda);
+    color: var(--cor-texto-suave);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.etapa-item.ativa .etapa-numero {
+    background: var(--cor-primaria);
+    color: white;
+}
+.etapa-texto { font-size: 0.875rem; }
+
+/* Navegação por setas entre etapas */
+.navegacao-etapas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--cor-borda);
+}
+.botao-seta {
+    padding: 0.4rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-pequeno);
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--cor-texto);
+    transition: var(--transicao);
+}
+.botao-seta:hover:not(:disabled) {
+    background: var(--cor-fundo);
+    border-color: var(--cor-borda-forte);
+}
+.botao-seta:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Descrição da etapa selecionada (canto inferior do vídeo) */
+.descricao-etapa {
+    padding: 1rem 1.25rem;
+    background: var(--cor-card);
+    border-top: 1px solid var(--cor-borda);
+    font-size: 0.875rem;
+    color: var(--cor-texto-suave);
+}
+.descricao-etapa strong { color: var(--cor-texto); }
+
+/* Lista de detecções (modo YOLO) */
+.lista-deteccoes {
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.lista-deteccoes h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cor-texto-suave);
+    margin-bottom: 0.75rem;
+}
+.deteccao-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--cor-borda);
+    font-size: 0.875rem;
+}
+.deteccao-item:last-child { border-bottom: none; }
+.deteccao-classe { font-weight: 500; color: var(--cor-texto); }
+.deteccao-confianca {
+    background: var(--cor-sucesso-suave);
+    color: var(--cor-sucesso);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.deteccoes-vazio {
+    color: var(--cor-texto-muito-suave);
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+/* Modo comparativo — dois vídeos lado a lado */
+.grade-comparativo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+@media (max-width: 900px) {
+    .grade-comparativo { grid-template-columns: 1fr; }
+}
+.painel-comparativo {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.painel-comparativo .rotulo-painel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--cor-texto);
+}
+.rotulo-bolinha {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cor-primaria);
+}
+.aviso-comparativo {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    background: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    font-size: 0.85rem;
+    color: var(--cor-texto-suave);
+}

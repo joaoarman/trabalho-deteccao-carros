@@ -1,0 +1,66 @@
+{#
+    index.html — Tela inicial com formulário de upload.
+
+    A sintaxe {% extends %} indica que este template herda do base.html.
+    Os {% block %} são os "buracos" que preenchemos.
+#}
+{% extends "base.html" %}
+
+{% block titulo %}Upload de vídeo · Contador de Veículos{% endblock %}
+
+{% block conteudo %}
+    <section class="hero">
+        <h1>Contador de Veículos por Vídeo</h1>
+        <p>Envie um vídeo de tráfego e o sistema irá detectar e contar os veículos automaticamente, usando visão computacional clássica e deep learning.</p>
+    </section>
+
+    {# Formulário de upload. O atributo enctype="multipart/form-data" é
+       OBRIGATÓRIO pra envio de arquivos. action aponta pra rota /upload. #}
+    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="card" id="formulario-upload">
+
+        {# A área inteira é clicável e dispara o input[type=file] escondido. #}
+        <label for="campo-video" class="area-upload" id="area-upload">
+            <svg class="area-upload-icone" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div class="area-upload-titulo">Clique para escolher um vídeo</div>
+            <div class="area-upload-detalhe">ou arraste e solte aqui · MP4, AVI, MOV, MKV, WEBM</div>
+
+            {# accept restringe o seletor de arquivo do navegador a vídeos. #}
+            <input type="file" name="video" id="campo-video" accept="video/*" required>
+        </label>
+
+        <div class="nome-arquivo-selecionado" id="nome-arquivo-selecionado"></div>
+
+        <div class="acoes-upload">
+            <button type="submit" class="botao" id="botao-enviar" disabled>
+                Enviar e continuar
+            </button>
+            <a href="{{ url_for('configurar', video_id='demo') }}" class="botao botao-secundario">
+                Ver demo sem upload
+            </a>
+        </div>
+    </form>
+
+    <section class="recursos">
+        <div class="recurso">
+            <h3>OpenCV clássico</h3>
+            <p>Pipeline tradicional: background subtraction, morfologia, contornos e tracking.</p>
+        </div>
+        <div class="recurso">
+            <h3>YOLOv8</h3>
+            <p>Detecção via rede neural pré-treinada no dataset COCO.</p>
+        </div>
+        <div class="recurso">
+            <h3>Comparativo</h3>
+            <p>Veja as duas abordagens lado a lado processando o mesmo vídeo.</p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>inicializarUpload();</script>
+{% endblock %}
