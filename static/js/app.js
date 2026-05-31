@@ -262,7 +262,7 @@ function inicializarPipelineOpenCV() {
         }
     }
 
-    let etapaAtiva = 1;
+    let etapaAtiva = 5;
 
     function selecionarEtapa(numero) {
         if (numero < 1) numero = 1;
@@ -313,7 +313,7 @@ function inicializarPipelineOpenCV() {
         else if (e.key === "a" || e.key === "A") irParaSelecaoArea();
     });
 
-    selecionarEtapa(1);
+    selecionarEtapa(5);
 
     // ----- Polling do contador -----
     // setInterval chama a função a cada N ms. Aqui buscamos o contador

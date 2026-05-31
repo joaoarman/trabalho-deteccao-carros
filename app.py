@@ -100,7 +100,7 @@ def garantir_estado(video_id: str):
             estado_videos[video_id] = {
                 "caminho": None,
                 "roi": None,
-                "etapa": 1,
+                "etapa": 5,
                 "contadores": {},
                 "deteccoes": [],
             }
@@ -236,7 +236,7 @@ def api_definir_etapa(video_id):
     """Define qual etapa (1..5) o stream deve renderizar."""
     dados = request.get_json(silent=True) or {}
     try:
-        etapa = int(dados.get("etapa", 1))
+        etapa = int(dados.get("etapa", 5))
     except (TypeError, ValueError):
         return jsonify({"ok": False, "erro": "Etapa inválida."}), 400
     if etapa < 1 or etapa > 5:
@@ -388,7 +388,7 @@ def _gerar_stream(video_id, caminho_video, modo):
                 frame_display = _renderizar_yolo(frame, resultado, objetos, contador)
             else:
                 # OpenCV: mostra a etapa do pipeline que o usuário selecionou.
-                etapa = estado_videos[video_id].get("etapa", 1)
+                etapa = estado_videos[video_id].get("etapa", 5)
                 frame_display = _renderizar_etapa(
                     etapa, frame, resultado, objetos, contador
                 )

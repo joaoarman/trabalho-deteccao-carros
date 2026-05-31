@@ -40,9 +40,8 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
                         src="{{ url_for('stream', video_id=video_id, modo='opencv') }}" alt="Vídeo sendo processado">
                 </div>
                 <div class="descricao-etapa">
-                    <strong id="descricao-etapa-titulo">1. Frame original</strong> -
-                    <span id="descricao-etapa-texto">o vídeo cru, sem nenhum processamento aplicado. Serve como
-                        referência pras outras etapas.</span>
+                    <strong id="descricao-etapa-titulo">5. Tracking + Contagem</strong> -
+                    <span id="descricao-etapa-texto">o centroid tracker dá um ID por veículo; quando o centroide cruza a linha, o contador incrementa.</span>
                 </div>
             </div>
 
@@ -69,7 +68,7 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
                 <div class="lista-etapas">
                     <h3>Etapas do pipeline</h3>
 
-                    <div class="etapa-item ativa" data-etapa="1" data-titulo="Frame original"
+                    <div class="etapa-item" data-etapa="1" data-titulo="Frame original"
                         data-descricao="o vídeo cru, sem nenhum processamento aplicado. Serve como referência pras outras etapas.">
                         <span class="etapa-numero">1</span>
                         <span class="etapa-texto">Frame original</span>
@@ -93,7 +92,7 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
                         <span class="etapa-texto">Contornos detectados</span>
                     </div>
 
-                    <div class="etapa-item" data-etapa="5" data-titulo="Tracking + Contagem"
+                    <div class="etapa-item ativa" data-etapa="5" data-titulo="Tracking + Contagem"
                         data-descricao="o centroid tracker dá um ID por veículo; quando o centroide cruza a linha, o contador incrementa.">
                         <span class="etapa-numero">5</span>
                         <span class="etapa-texto">Tracking + Contagem</span>
