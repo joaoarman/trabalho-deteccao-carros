@@ -512,7 +512,7 @@ def _renderizar_yolo(frame, resultado, objetos, contador):
         cv2.circle(display, (int(cx), int(cy)), 5, COR_TRAJETO, -1)
 
     _desenhar_area(display, contador)
-    _desenhar_contador(display, contador, "YOLOv8")
+    _desenhar_contador(display, contador, "YOLO")
     return display
 
 
@@ -533,7 +533,7 @@ def _desenhar_area(display, contador):
 def _desenhar_contador(imagem, contador, rotulo):
     """Desenha uma faixa no canto superior esquerdo com o contador.
 
-    `rotulo` identifica o que está sendo mostrado (ex: "Etapa 5", "YOLOv8").
+    `rotulo` identifica o que está sendo mostrado (ex: "Etapa 5", "YOLO").
     """
     texto_total = f"Total: {contador.total}"
     texto_taxa = f"{contador.por_minuto()} / min"

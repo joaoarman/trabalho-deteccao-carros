@@ -1,15 +1,15 @@
-# Etapa 5 — YOLOv8 e o Modo Comparativo
+# Etapa 5 — YOLO e o Modo Comparativo
 
 ## 1. O que é
 
-Esta etapa adiciona a **segunda abordagem de detecção** do projeto — o **YOLOv8**, um modelo de *deep learning* — e o **modo comparativo**, que roda as duas abordagens (clássica e YOLO) lado a lado, sobre o mesmo vídeo e a mesma área de contagem.
+Esta etapa adiciona a **segunda abordagem de detecção** do projeto — o **YOLO**, um modelo de *deep learning* — e o **modo comparativo**, que roda as duas abordagens (clássica e YOLO) lado a lado, sobre o mesmo vídeo e a mesma área de contagem.
 
 Agora o sistema tem três modos:
 
 | Modo | Detector | Onde está |
 |------|----------|-----------|
 | OpenCV clássico | Subtração de fundo + morfologia + contornos | `core/detector_classico.py` |
-| YOLO | Rede neural pré-treinada (YOLOv8n) | `core/detector_yolo.py` |
+| YOLO | Rede neural pré-treinada em COCO | `core/detector_yolo.py` |
 | Comparativo | Os dois ao mesmo tempo | dois streams na mesma página |
 
 O **tracker** (`CentroidTracker`) e o **contador** (`Contador`, por área) são exatamente os mesmos nos três modos. O que muda é só **quem produz as caixas**.
@@ -32,7 +32,7 @@ Detectores antigos varriam a imagem com uma janela deslizante, classificando cad
 
 ### 3.2 COCO e as classes de veículo
 
-O `yolov8n.pt` já vem treinado no **COCO** (80 classes do dia a dia). Não treinamos nada — apenas filtramos as classes de veículo (os IDs são fixos no COCO):
+O modelo já vem treinado no **COCO** (80 classes do dia a dia). Não treinamos nada — apenas filtramos as classes de veículo (os IDs são fixos no COCO):
 
 ```
 2 = car      3 = motorcycle      5 = bus      7 = truck
@@ -42,9 +42,9 @@ O `yolov8n.pt` já vem treinado no **COCO** (80 classes do dia a dia). Não trei
 
 A rede tende a prever várias caixas sobrepostas para o mesmo objeto. O NMS mantém a de maior confiança e descarta as que se sobrepõem demais (IoU alto). O ultralytics aplica NMS internamente — não precisamos implementar.
 
-### 3.4 Por que o "nano" (yolov8n)?
+### 3.4 Escolha do modelo (parametrizável)
 
-A família YOLOv8 vem em tamanhos `n < s < m < l < x`. O `n` é o menor e mais rápido — roda em CPU comum, ideal para a apresentação. Tem menos precisão que os maiores, mas é suficiente para contar carros. Esse trade-off precisão × velocidade é, em si, um ótimo assunto de prova.
+A variante concreta do YOLO é definida em `core/detector_yolo.py` pela constante `NOME_MODELO` (ex.: `yolov8n.pt`, `yolov8s.pt`…). Trocar o arquivo ali muda precisão × velocidade sem alterar o resto do pipeline. O projeto usa a variante menor por padrão — roda em CPU comum, ideal para a apresentação.
 
 ### 3.5 Como usamos (código comentado)
 
@@ -108,18 +108,18 @@ A página tem duas `<img>`, uma apontando pra `/stream/<id>/opencv` e outra pra 
 
 | Limitação | Comentário |
 |-----------|------------|
-| YOLOv8n em CPU pode rodar abaixo do FPS do vídeo | Esperado. O stream simplesmente roda no ritmo possível; modelos maiores ou GPU acelerariam |
+| YOLO em CPU pode rodar abaixo do FPS do vídeo | Esperado. O stream simplesmente roda no ritmo possível; variantes maiores ou GPU acelerariam |
 | O comparativo roda **dois** pipelines ao mesmo tempo | Dobra o custo de CPU; em máquina fraca os dois lados ficam mais lentos |
-| Precisão do `n` é menor que `s/m/l/x` | Trade-off consciente por velocidade |
+| Variantes menores são menos precisas que as maiores | Trade-off consciente por velocidade; trocável via `NOME_MODELO` |
 | Contagem depende do tracker (centroid) | Mesma limitação dos outros modos: troca de ID em oclusão pode duplicar |
-| O modelo precisa estar em `modelos/yolov8n.pt` | Já baixado; sem internet o ultralytics não conseguiria buscar na 1ª vez |
+| O arquivo do modelo precisa estar em `modelos/` | Já baixado; sem internet o ultralytics não conseguiria buscar na 1ª vez |
 
 ---
 
 ## 6. Perguntas prováveis na apresentação
 
 **P: Vocês treinaram o YOLO?**
-R: Não. Usamos o `yolov8n` pré-treinado em COCO, que já inclui car, truck, bus e motorcycle. Treinar exigiria dataset rotulado, GPU e tempo — e não melhoraria nada pro nosso objetivo, já que as classes que precisamos já vêm prontas.
+R: Não. Usamos um modelo pré-treinado em COCO, que já inclui car, truck, bus e motorcycle. Treinar exigiria dataset rotulado, GPU e tempo — e não melhoraria nada pro nosso objetivo, já que as classes que precisamos já vêm prontas.
 
 **P: Por que o YOLO conta diferente do OpenCV no comparativo?**
 R: São técnicas diferentes. O clássico só vê *movimento*: um carro parado some, sombras viram falsos positivos, carros colados grudam num só blob. O YOLO vê *objetos*: detecta carro parado e separa carros próximos, mas pode falhar com oclusão e custa mais caro. O comparativo deixa essas diferenças visíveis.
@@ -131,4 +131,4 @@ R: É a probabilidade que a rede atribui àquela detecção. Filtramos abaixo de
 R: Porque o problema "associar caixas entre frames" e "contar quem entra na área" é o mesmo independentemente de quem detectou. Manter a saída dos dois detectores no mesmo formato `(x,y,w,h)` deixou isso de graça.
 
 **P: O modelo roda na nuvem?**
-R: Não. Roda 100% local, a partir do arquivo `modelos/yolov8n.pt`. Por isso baixamos o modelo antes — pra apresentação não depender de internet.
+R: Não. Roda 100% local, a partir do arquivo definido em `NOME_MODELO` dentro de `modelos/`. Por isso baixamos o modelo antes — pra apresentação não depender de internet.

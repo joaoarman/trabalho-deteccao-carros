@@ -79,11 +79,11 @@ Dois players lado a lado, mesmo vídeo, mesmo ROI, processamentos diferentes. Co
 | Tópico | Escolha | Por quê |
 |--------|---------|---------|
 | Linguagem | **Python 3.10+** | Padrão de visão computacional, sugerido pelo professor |
-| Detecção | **Ambas: OpenCV clássico + YOLOv8** | Permite comparar abordagens e enriquece a apresentação |
+| Detecção | **Ambas: OpenCV clássico + YOLO** | Permite comparar abordagens e enriquece a apresentação |
 | Tracking | **Centroid Tracker implementado do zero** | Algoritmo simples e altamente didático |
 | Interface | **Flask + HTML/CSS/JS puros** | Sem mágica, controle total, fácil de explicar |
 | Ambiente | **Local (notebooks dos integrantes)** | Estabilidade na apresentação, sem dependência de internet |
-| Modelo YOLO | **YOLOv8n (nano), pré-treinado em COCO** | Detecta car/truck/bus/motorcycle sem precisar treinar |
+| Modelo YOLO | **Pré-treinado em COCO** (variante via `NOME_MODELO` em `detector_yolo.py`) | Detecta car/truck/bus/motorcycle sem precisar treinar |
 | Treinamento próprio | **Não vamos treinar** | YOLO já vem pronto; explicaremos por quê na apresentação |
 
 ---
@@ -96,7 +96,7 @@ opencv-python              # leitura de vídeo, processamento de imagem, desenho
 numpy                      # operações com arrays (base de tudo em CV)
 
 # Deep learning (modo YOLO)
-ultralytics                # YOLOv8 pronto pra uso
+ultralytics                # YOLO pronto pra uso
 torch + torchvision        # backend do ultralytics
 
 # Interface web
@@ -154,7 +154,7 @@ Cada etapa concluída deve gerar um arquivo `.md` de documentação corresponden
 - **Tracking**: acompanhar o mesmo objeto entre frames consecutivos.
 - **Centroid**: centro geométrico de uma bounding box.
 - **YOLO (You Only Look Once)**: família de modelos de deep learning que detecta objetos em uma única passada pela rede.
-- **COCO**: dataset público com 80 classes de objetos, incluindo car/truck/bus/motorcycle. Base do YOLOv8 pré-treinado.
+- **COCO**: dataset público com 80 classes de objetos, incluindo car/truck/bus/motorcycle. Base do YOLO pré-treinado.
 - **IoU (Intersection over Union)**: métrica que mede sobreposição entre bounding boxes (usada em tracking e NMS).
 - **NMS (Non-Max Suppression)**: técnica para descartar detecções redundantes do YOLO.
 - **venv**: ambiente virtual Python. Caixa isolada com o próprio interpretador e suas próprias bibliotecas, evitando conflitos entre projetos da mesma máquina.
@@ -185,10 +185,10 @@ Cada etapa concluída deve gerar um arquivo `.md` de documentação corresponden
 - **Polling**: técnica em que o cliente faz requisições periódicas pra obter atualizações do servidor.
 - **GIL (Global Interpreter Lock)**: lock do CPython que serializa execução de bytecode entre threads. Garante atomicidade básica de operações em dict, mas não cobre operações compostas.
 - **`threading.Lock`**: mecanismo de sincronização entre threads. Usado pra proteger escritas compostas no estado global.
-- **ultralytics**: biblioteca que empacota o YOLOv8 com API simples (`YOLO(...).predict(...)`). Aplica NMS internamente.
+- **ultralytics**: biblioteca que empacota o YOLO com API simples (`YOLO(...).predict(...)`). Aplica NMS internamente.
 - **Inferência**: passar uma entrada (frame) pela rede já treinada pra obter a saída (detecções). Diferente de treino, que ajusta os pesos.
 - **Confiança (confidence score)**: probabilidade que o modelo atribui a uma detecção. Filtramos abaixo de 0.4.
-- **Modelo nano (yolov8n)**: a menor variante do YOLOv8 (n < s < m < l < x). Mais rápida, menos precisa — escolhida pra rodar em CPU.
+- **`NOME_MODELO`**: constante em `detector_yolo.py` que define qual arquivo `.pt` carregar (ex.: `yolov8n.pt`). Trocar a variante altera precisão × velocidade sem mudar o resto do pipeline.
 - **Lazy loading**: carregar um recurso caro (o modelo) só na primeira vez que é preciso, e reaproveitar depois. Feito com double-checked locking em `detector_yolo.py`.
 - **Carregamento único + lock (double-checked locking)**: padrão pra garantir que o modelo seja carregado uma só vez mesmo com vários streams começando juntos.
 
@@ -200,7 +200,7 @@ Cada etapa concluída deve gerar um arquivo `.md` de documentação corresponden
 |------|---------|---------------|
 | 2026-05-27 | Adotar ambas as abordagens de detecção | Mais conteúdo de apresentação, permite comparação |
 | 2026-05-27 | Flask em vez de Streamlit | Controle total, sem mágica oculta, mais didático |
-| 2026-05-27 | YOLOv8 pré-treinado, sem treino próprio | Já cobre as classes que precisamos; treinar seria overkill |
+| 2026-05-27 | YOLO pré-treinado, sem treino próprio | Já cobre as classes que precisamos; treinar seria overkill |
 | 2026-05-27 | Centroid Tracker implementado do zero | Algoritmo simples ideal para entender tracking |
 | 2026-05-27 | Visualização passo a passo no modo OpenCV | Coração didático da apresentação |
 | 2026-05-27 | Estrutura de diretórios e etapas definidas sob demanda | Evitar confusão e aumentar domínio sobre cada peça do projeto |
@@ -218,10 +218,11 @@ Cada etapa concluída deve gerar um arquivo `.md` de documentação corresponden
 | 2026-05-27 | Correção da seleção de ROI no canvas | Linha não aparecia ao desenhar e caía no "default" do meio no processamento. Causa: divergência entre tamanho de exibição (CSS) e bitmap do canvas — a normalização estourava 0..1 e o backend rejeitava (erro 400). Solução em `app.js`: coords normalizadas desde o clique, `ResizeObserver` sincronizando o bitmap e ajuste da proporção do container ao vídeo no `loadedmetadata` (elimina barras pretas do `object-fit: contain`) |
 | 2026-05-27 | ROI passou de LINHA para ÁREA (polígono de N pontos) | Mais flexível: permite contar a cena toda ou só uma faixa em via de mão dupla. Contagem reescrita com point-in-polygon (ray casting) em `contador.py`; contagem na "primeira vez dentro" da área (não em transição) pra suportar área = cena inteira |
 | 2026-05-27 | Botão + atalho "Alterar área e zerar" no modo OpenCV | Antes era preciso voltar/recarregar. Botão linka pra `/configurar/<id>` (atalho tecla A); o `Contador` é recriado no novo stream, zerando a contagem. `configurar` repovoa o polígono salvo (`roi_inicial`) |
-| 2026-05-27 | Etapa 5 concluída: YOLOv8 + modo comparativo | Criado `core/detector_yolo.py` (YOLOv8n pré-treinado, classes de veículo do COCO, NMS via ultralytics); `app.py` refatorado com `_gerar_stream` genérico parametrizado por modo, contadores por modo no estado, rotas `/stream/<id>/<modo>`, `/api/contador/<id>/<modo>`, `/api/deteccoes/<id>`; templates YOLO e comparativo funcionais; `docs/05_yolo_e_comparativo.md` |
+| 2026-05-27 | Etapa 5 concluída: YOLO + modo comparativo | Criado `core/detector_yolo.py` (YOLO pré-treinado em COCO, classes de veículo, NMS via ultralytics); `app.py` refatorado com `_gerar_stream` genérico parametrizado por modo, contadores por modo no estado, rotas `/stream/<id>/<modo>`, `/api/contador/<id>/<modo>`, `/api/deteccoes/<id>`; templates YOLO e comparativo funcionais; `docs/05_yolo_e_comparativo.md` |
 | 2026-05-27 | YOLO e clássico devolvem o mesmo formato de saída `(x,y,w,h)` | Permite reusar o mesmo tracker e contador nos três modos; só o detector e a renderização mudam |
 | 2026-05-27 | Um único `_gerar_stream` parametrizado por modo (sem duplicar) | OpenCV e YOLO compartilham o fluxo de stream; só detector + renderização diferem |
-| 2026-05-27 | Modelo YOLO guardado localmente em `modelos/yolov8n.pt` | Garante funcionamento offline na apresentação (ultralytics baixaria só na 1ª vez com internet) |
+| 2026-05-27 | Modelo YOLO guardado localmente em `modelos/` | Garante funcionamento offline na apresentação (ultralytics baixaria só na 1ª vez com internet) |
+| 2026-05-31 | Referências unificadas como "YOLO" (não YOLOv8/nano) | Variante do modelo é parametrizável via `NOME_MODELO`; docs e UI não amarram a um tamanho específico |
 | 2026-05-27 | Comparativo: dois streams independentes + etapa OpenCV forçada em 5 | Cada lado tem seu contador; lado clássico mostra o resultado final (tracking) em vez do frame cru |
 
 ---
