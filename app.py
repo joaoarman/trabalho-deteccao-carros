@@ -38,10 +38,11 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
+from core.contador import Contador
 from core.detector_classico import DetectorClassico
 from core.detector_yolo import DetectorYOLO
+from core.leitor_video import LeitorVideo
 from core.tracker import CentroidTracker
-from core.contador import Contador
 
 
 # ============================================================================
@@ -335,15 +336,16 @@ def _gerar_stream(video_id, caminho_video, modo):
     mantém a conexão aberta. Ao desconectar, o generator é interrompido e o
     `finally` libera o vídeo.
     """
-    cap = cv2.VideoCapture(caminho_video)
-    if not cap.isOpened():
+    try:
+        leitor = LeitorVideo(caminho_video)
+    except IOError:
         return
 
-    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    fps = leitor.fps
     delay_alvo = 1.0 / fps  # tempo desejado entre frames (pra não acelerar o vídeo)
 
-    largura_original = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    altura_original = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    largura_original = leitor.largura
+    altura_original = leitor.altura
 
     # Se o vídeo é grande, escala pra reduzir custo. Mantém proporção.
     if largura_original > LARGURA_PROCESSAMENTO:
@@ -368,10 +370,10 @@ def _gerar_stream(video_id, caminho_video, modo):
         while True:
             inicio_frame = time.time()
 
-            ret, frame = cap.read()
+            ret, frame = leitor.ler_frame()
             if not ret:
                 # Acabou o vídeo: reinicia (loop infinito) e ressincroniza
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                leitor.reiniciar()
                 contador.resetar()
                 continue
 
@@ -425,7 +427,7 @@ def _gerar_stream(video_id, caminho_video, modo):
                 time.sleep(atraso)
 
     finally:
-        cap.release()
+        leitor.fechar()
 
 
 # ============================================================================
