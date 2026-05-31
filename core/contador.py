@@ -1,21 +1,8 @@
 """
-contador.py — Conta veículos que entram numa ÁREA (polígono) de interesse
+Conta veículos que entram numa ÁREA (polígono) de interesse
 
 ----------------------------------------------------------------------------
-Por que polígono em vez de linha?
-----------------------------------------------------------------------------
-
-A versão anterior contava quando o centroide CRUZAVA uma linha. Funciona, mas
-é rígida: serve mal pra cenas com duas faixas (ex: uma indo, outra vindo),
-onde queremos contar só uma das faixas, ou uma região específica da pista.
-
-Com um POLÍGONO (área fechada com N pontos), o usuário desenha exatamente a
-região que importa. Um veículo é contado quando seu centroide está DENTRO
-dessa área. Pra contar as duas faixas, desenha-se uma área grande; pra contar
-só uma, desenha-se um polígono em cima daquela faixa.
-
-----------------------------------------------------------------------------
-Como saber se um ponto está dentro de um polígono — RAY CASTING
+Como saber se um ponto está dentro de um polígono - RAY CASTING
 ----------------------------------------------------------------------------
 
 Algoritmo clássico (também chamado de "regra par-ímpar"):
@@ -29,14 +16,6 @@ Intuição: cada vez que o raio atravessa a borda, ele alterna entre "fora" e
 "dentro". Saindo de fora (no infinito à direita), um número ímpar de trocas
 significa que na origem do raio estávamos dentro.
 
-Pra cada aresta (vértice i até vértice j), o raio horizontal na altura `py`
-cruza a aresta se, e somente se:
-    1. a aresta "abraça" a altura py — um vértice está acima e o outro abaixo:
-           (yi > py) != (yj > py)
-    2. o ponto de cruzamento da aresta com a altura py fica à DIREITA de px.
-A condição 1 garante que a aresta não é horizontal (yi != yj), então a divisão
-na condição 2 nunca divide por zero.
-
 ----------------------------------------------------------------------------
 Quando contar
 ----------------------------------------------------------------------------
@@ -47,8 +26,7 @@ enquanto ele permanece (ou volta) na área.
 
 Escolhemos "primeira vez dentro" em vez de "transição de fora pra dentro" de
 propósito: assim a contagem também funciona quando o usuário seleciona a cena
-inteira como área (não existiria um "fora" pra transicionar). A discussão
-sobre isso está documentada em docs/04.
+inteira como área (não existiria um "fora" pra transicionar).
 
 ----------------------------------------------------------------------------
 Taxa "por minuto"
@@ -72,7 +50,7 @@ class Contador:
         self.poligono = poligono
         self.total = 0
 
-        # IDs já contados — evita contar o mesmo veículo a cada frame em que ele
+        # IDs já contados - evita contar o mesmo veículo a cada frame em que ele
         # continua dentro da área.
         self._ja_contados = set()
 
@@ -80,7 +58,7 @@ class Contador:
         self._momentos = []
 
     # ----------------------------------------------------------------------
-    # Geometria — ray casting (point-in-polygon)
+    # Geometria - ray casting (point-in-polygon)
     # ----------------------------------------------------------------------
 
     def _dentro(self, ponto) -> bool:
@@ -92,7 +70,7 @@ class Contador:
         dentro = False
         n = len(self.poligono)
 
-        # `j` começa no último vértice; cada aresta vai do vértice j ao vértice i.
+        # `j` começa no último vértice sendo que cada aresta vai do vértice j ao vértice i.
         j = n - 1
         for i in range(n):
             xi, yi = self.poligono[i]
@@ -113,12 +91,12 @@ class Contador:
     # ----------------------------------------------------------------------
 
     def atualizar(self, objetos_rastreados: dict):
-        """Recebe {id: centroide} do tracker; conta quem entrou na área."""
+        """Recebe {id: centroide} do tracker e conta quem entrou na área."""
         if self.poligono is None:
             return
 
         for id_obj, centro in objetos_rastreados.items():
-            # Já contado antes? Ignora — contamos cada veículo só uma vez.
+            # Já contado antes? Ignora - contamos cada veículo só uma vez.
             if id_obj in self._ja_contados:
                 continue
             if self._dentro(centro):
@@ -133,7 +111,7 @@ class Contador:
     def por_minuto(self) -> int:
         """Quantos veículos foram contados nos últimos 60 segundos."""
         agora = time.time()
-        # Limpeza preguiçosa: descarta timestamps antigos pra não crescer pra sempre
+        # Mantem apenas os timestamps dos últimos 60 segundos
         self._momentos = [t for t in self._momentos if agora - t < 60.0]
         return len(self._momentos)
 

@@ -1,5 +1,5 @@
 """
-tracker.py — Centroid Tracker implementado do zero
+Centroid Tracker
 
 ----------------------------------------------------------------------------
 O problema que o tracker resolve
@@ -15,7 +15,7 @@ Tracker = algoritmo que recebe as detecções de cada frame e atribui IDs
 consistentes a objetos físicos ao longo do tempo.
 
 ----------------------------------------------------------------------------
-Centroid Tracker — a ideia
+Qual é a ideia do Centroid Tracker?
 ----------------------------------------------------------------------------
 
 CENTROIDE de uma caixa (x, y, w, h) = ponto (x + w/2, y + h/2).
@@ -31,14 +31,14 @@ Algoritmo (a cada frame):
        guardamos da última iteração).
     3. Constrói uma matriz de distâncias (N existentes x M novos).
     4. Greedy: associa o par com menor distância, marca os dois como "usados"
-       e repete até todos serem associados — desde que a distância seja
+       e repete até todos serem associados - desde que a distância seja
        razoável (abaixo de um limiar).
     5. Existentes sem par são marcados como "desaparecidos". Depois de N
        frames sumido, removemos o ID.
     6. Novos centroides sem par viram IDs novos.
 
 ----------------------------------------------------------------------------
-Limitações conhecidas (boas pra apresentação)
+Limitações conhecidas
 ----------------------------------------------------------------------------
 
 - Se dois carros próximos trocarem de posição entre frames, podemos trocar
@@ -57,8 +57,8 @@ def _distancia_pareada(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """Calcula a matriz de distâncias euclidianas entre dois conjuntos de pontos.
 
     Argumentos:
-        a: array shape (n, 2) — n pontos 2D
-        b: array shape (m, 2) — m pontos 2D
+        a: array shape (n, 2) - n pontos 2D
+        b: array shape (m, 2) - m pontos 2D
 
     Retorna:
         matriz shape (n, m) onde D[i,j] = distância euclidiana entre a[i] e b[j].
@@ -71,7 +71,7 @@ def _distancia_pareada(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         sum(axis=-1)    soma os 2 componentes
         sqrt            tira a raiz
 
-    Isso evita um for duplo em Python e roda muito mais rápido em C.
+    Isso evita um for duplo em Python e roda muito mais rápido.
     """
     diff = a[:, None, :] - b[None, :, :]
     return np.sqrt(np.sum(diff ** 2, axis=-1))
@@ -88,7 +88,7 @@ class CentroidTracker:
                            centroides são o mesmo objeto entre frames.
         """
         self._proximo_id = 0
-        # OrderedDict mantém a ordem de inserção — útil pra reconstruir o
+        # OrderedDict mantém a ordem de inserção - útil pra reconstruir o
         # mapeamento "índice na matriz <-> ID do objeto".
         self.objetos: "OrderedDict[int, tuple]" = OrderedDict()  # id -> (cx, cy)
         self.desaparecidos: "OrderedDict[int, int]" = OrderedDict()  # id -> nº frames sumido
@@ -112,14 +112,14 @@ class CentroidTracker:
         del self.desaparecidos[id_objeto]
 
     # ----------------------------------------------------------------------
-    # Atualização — o método principal, chamado a cada frame
+    # Atualização - o método principal, chamado a cada frame
     # ----------------------------------------------------------------------
 
     def atualizar(self, caixas: list) -> "OrderedDict[int, tuple]":
-        """Recebe as caixas detectadas neste frame; devolve {id: centroide}."""
+        """Recebe as caixas detectadas neste frame e devolve {id: centroide}."""
 
         # CASO 1: nenhuma detecção neste frame.
-        # Incrementa o "desaparecido" de todos os objetos rastreados; remove
+        # Incrementa o "desaparecido" de todos os objetos rastreados e remove
         # quem passou do limite.
         if len(caixas) == 0:
             for id_obj in list(self.desaparecidos.keys()):
@@ -148,9 +148,8 @@ class CentroidTracker:
         # Matriz de distâncias (existentes x novos)
         D = _distancia_pareada(centroides_existentes, centroides_novos)
 
-        # Estratégia gulosa: ordena todos os pares por distância crescente e
-        # vai associando, desde que nem o objeto existente nem o novo já
-        # tenham sido associados.
+        # Ordena todos os pares por distância crescente e vai associando,
+        # desde que nem o objeto existente nem o novo já tenham sido associados.
         indices_ordenados = np.argsort(D, axis=None)
 
         linhas_usadas = set()    # IDs já associados (índices em `ids`)
@@ -163,7 +162,7 @@ class CentroidTracker:
 
             if linha in linhas_usadas or coluna in colunas_usadas:
                 continue
-            # Se a menor distância restante já passou do limiar, paramos —
+            # Se a menor distância restante já passou do limiar, paramos -
             # qualquer associação daqui pra frente seria forçada.
             if D[linha, coluna] > self.distancia_maxima:
                 break

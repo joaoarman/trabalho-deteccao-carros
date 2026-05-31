@@ -1,5 +1,5 @@
 """
-app.py — Servidor Flask do Contador de Veículos
+Servidor Flask do Contador de Veículos
 
 Ponto de entrada da aplicação. Responsabilidades:
 
@@ -14,16 +14,7 @@ Ponto de entrada da aplicação. Responsabilidades:
 
 Estado em memória (estado_videos):
     Mapeia video_id → dicionário com caminho do arquivo, linha de ROI, etapa
-    atual e instância do Contador. Em produção isso iria pra Redis ou banco;
-    pra escopo acadêmico, dicionário Python em memória basta.
-
-----------------------------------------------------------------------------
-Como executar
-----------------------------------------------------------------------------
-    source venv/bin/activate          (Linux/macOS)  ou venv\\Scripts\\activate (Windows)
-    pip install -r requirements.txt
-    python app.py
-    → http://localhost:5000
+    atual e instância do Contador.
 """
 
 import os
@@ -47,7 +38,6 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-# Imports do nosso pacote core/
 from core.detector_classico import DetectorClassico
 from core.detector_yolo import DetectorYOLO
 from core.tracker import CentroidTracker
@@ -86,14 +76,14 @@ def extensao_valida(nome_arquivo: str) -> bool:
 # ============================================================================
 # Estrutura por vídeo:
 #     {
-#         'caminho':    str       — caminho do arquivo em uploads/
-#         'roi':        list|None — polígono [[x,y], ...] em coords NORMALIZADAS
-#         'etapa':      int       — etapa (1 a 5) que o usuário quer ver (só OpenCV)
-#         'contadores': dict      — modo ('opencv'/'yolo') -> Contador
+#         'caminho':    str       - caminho do arquivo em uploads/
+#         'roi':        list|None - polígono [[x,y], ...] em coords NORMALIZADAS
+#         'etapa':      int       - etapa (1 a 5) que o usuário quer ver (só OpenCV)
+#         'contadores': dict      - modo ('opencv'/'yolo') -> Contador
 #                                   Guardamos um por modo porque o comparativo
 #                                   roda os dois ao mesmo tempo, cada um com a
 #                                   sua própria contagem.
-#         'deteccoes':  list      — detecções do último frame YOLO (classe +
+#         'deteccoes':  list      - detecções do último frame YOLO (classe +
 #                                   confiança), pra alimentar a lista na tela.
 #     }
 #
@@ -116,7 +106,7 @@ def garantir_estado(video_id: str):
 
 
 # ============================================================================
-# ROTAS — Interface (HTML)
+# ROTAS - Interface (HTML)
 # ============================================================================
 
 @app.route("/")
@@ -209,7 +199,7 @@ def processar(video_id, modo):
 
 
 # ============================================================================
-# ROTAS — Servir arquivos de vídeo
+# ROTAS - Servir arquivos de vídeo
 # ============================================================================
 
 @app.route("/video/<video_id>")
@@ -226,7 +216,7 @@ def servir_video(video_id):
 
 
 # ============================================================================
-# API JSON — pequena camada pra o JS conversar com o backend
+# API JSON - pequena camada pra o JS conversar com o backend
 # ============================================================================
 
 @app.route("/api/roi/<video_id>", methods=["POST"])
@@ -298,7 +288,7 @@ def api_deteccoes(video_id):
 
 
 # ============================================================================
-# STREAMING MJPEG — um gerador genérico serve OpenCV e YOLO
+# STREAMING MJPEG - um gerador genérico serve OpenCV e YOLO
 # ============================================================================
 #
 # Os dois modos compartilham quase todo o fluxo (abrir vídeo, redimensionar,
@@ -306,7 +296,7 @@ def api_deteccoes(video_id):
 #     - qual DETECTOR encontra as caixas (clássico vs YOLO), e
 #     - como o frame é DESENHADO (etapas do pipeline vs caixas + classes).
 # Por isso temos um único `_gerar_stream` parametrizado pelo `modo`, em vez de
-# duplicar a lógica. Isso mantém o código organizado e fácil de seguir.
+# duplicar a lógica.
 
 MODOS_STREAM = {"opencv", "yolo"}
 
@@ -316,7 +306,7 @@ def stream(video_id, modo):
     """Resposta MJPEG: cada frame processado vai como JPEG individual.
 
     O navegador interpreta `multipart/x-mixed-replace` substituindo a imagem
-    anterior pela nova continuamente — efeito de vídeo ao vivo. `modo` escolhe
+    anterior pela nova continuamente - efeito de vídeo ao vivo. `modo` escolhe
     o detector ('opencv' ou 'yolo').
     """
     estado = estado_videos.get(video_id)
@@ -363,7 +353,7 @@ def _gerar_stream(video_id, caminho_video, modo):
     else:
         largura, altura = largura_original, altura_original
 
-    # Componentes do pipeline — um conjunto por stream (estado isolado).
+    # Componentes do pipeline - um conjunto por stream (estado isolado).
     detector = _criar_detector(modo)
     tracker = CentroidTracker()
 
@@ -428,7 +418,7 @@ def _gerar_stream(video_id, caminho_video, modo):
 
             # Throttle pra respeitar o FPS original do vídeo. (No YOLO em CPU a
             # inferência pode ser mais lenta que o FPS; aí o atraso é negativo e
-            # simplesmente seguimos sem dormir — o vídeo roda no ritmo possível.)
+            # simplesmente seguimos sem dormir - o vídeo roda no ritmo possível.)
             transcorrido = time.time() - inicio_frame
             atraso = delay_alvo - transcorrido
             if atraso > 0:
@@ -439,10 +429,10 @@ def _gerar_stream(video_id, caminho_video, modo):
 
 
 # ============================================================================
-# RENDERIZAÇÃO POR ETAPA — converte intermediários em imagem exibível
+# RENDERIZAÇÃO POR ETAPA - converte intermediários em imagem exibível
 # ============================================================================
 
-# Cores BGR (lembre: OpenCV usa BGR, não RGB!)
+# Cores BGR (OpenCV usa BGR, não RGB!)
 COR_LINHA = (37, 99, 235)        # azul primário da interface
 COR_CAIXA = (16, 185, 129)       # verde sucesso
 COR_TRAJETO = (245, 158, 11)     # laranja
@@ -565,7 +555,7 @@ def _converter_poligono(roi_normalizada, largura, altura):
     Retorna uma lista de vértices [(x, y), ...]. Se nenhuma área válida foi
     desenhada, usa um default: uma faixa central horizontal cobrindo toda a
     largura (35%..65% da altura). Funciona como uma "linha grossa" no meio da
-    cena — útil pro demo funcionar mesmo sem o usuário desenhar nada.
+    cena - útil pro demo funcionar mesmo sem o usuário desenhar nada.
     """
     if not roi_normalizada or len(roi_normalizada) < 3:
         y_topo = int(0.35 * altura)

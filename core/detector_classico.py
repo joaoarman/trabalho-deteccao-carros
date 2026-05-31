@@ -1,5 +1,5 @@
 """
-detector_classico.py — Pipeline OpenCV puro para detectar veículos em movimento
+Pipeline OpenCV puro para detectar veículos em movimento
 
 Este módulo concentra a parte de VISÃO COMPUTACIONAL CLÁSSICA. Recebe um frame
 e devolve uma lista de bounding boxes (caixas) onde algo está se movendo.
@@ -12,7 +12,7 @@ Pipeline aplicado a cada frame
         │
         ▼
     Background Subtraction (MOG2)
-        │  Resultado: máscara binária — branco = movimento, preto = fundo
+        │  Resultado: máscara binária - branco = movimento, preto = fundo
         ▼
     Threshold (remove sombras)
         │  Resultado: máscara estritamente preto/branco
@@ -21,12 +21,12 @@ Pipeline aplicado a cada frame
         │  Resultado: máscara limpa, sem ruído isolado
         ▼
     findContours
-        │  Resultado: lista de curvas fechadas
+        │  Resultado: lista de contornos dos objetos em movimento
         ▼
     Filtragem por área
         │  Resultado: só contornos com tamanho compatível com veículo
         ▼
-    boundingRect → caixas (x, y, w, h)
+    boundingRect → bounding boxes (x, y, w, h)
 
 ----------------------------------------------------------------------------
 Algoritmos por trás
@@ -34,7 +34,7 @@ Algoritmos por trás
 
 MOG2 (Mixture of Gaussians 2):
     Para cada pixel da imagem, mantém uma "história" das últimas N intensidades
-    e modela essa história como uma MISTURA DE GAUSSIANAS (várias curvas
+    e modela essa história como uma MISTURA DE GAUSSIANAS (vários contornos
     normais sobrepostas). Quando chega um pixel novo, o algoritmo pergunta:
     "esse valor é compatível com alguma das gaussianas que aprendi?"
         - Sim → faz parte do fundo (preto na máscara).
@@ -52,7 +52,7 @@ Morfologia matemática:
     - CLOSING = dilatação seguida de erosão. Fecha buracos sem inflar objetos.
 
 findContours:
-    Algoritmo que percorre a máscara binária e identifica curvas fechadas
+    Algoritmo que percorre a máscara binária e identifica contornos fechados
     (bordas de regiões brancas conectadas). Retorna cada contorno como um
     array de pontos. Usamos cv2.boundingRect() pra obter o menor retângulo
     que envolve cada contorno.
@@ -65,21 +65,21 @@ class DetectorClassico:
     """Detecta movimento em frames consecutivos usando OpenCV clássico."""
 
     # -----------------------------------------------------------------------
-    # Constantes nomeadas — explicitas no topo facilitam ajuste e explicação
+    # Constantes nomeadas - explicitas no topo facilitam ajuste e explicação
     # -----------------------------------------------------------------------
 
     # Área mínima de um contorno (em pixels²) pra ser considerado veículo.
     # Abaixo disso é ruído ou sombra de pessoa/folha. Esse valor depende da
-    # resolução e do ângulo da câmera — pode precisar ser ajustado por vídeo.
+    # resolução e do ângulo da câmera - pode precisar ser ajustado por vídeo.
     AREA_MINIMA_PADRAO = 1500
 
-    # Área máxima — descarta blobs gigantes (ex: vários carros grudados).
+    # Área máxima - descarta blobs gigantes (ex: vários carros grudados).
     AREA_MAXIMA_PADRAO = 80000
 
     # Threshold de binarização após o MOG2. O MOG2 marca pixels de sombra com
-    # valor 127 (cinza) e movimento real com 255 (branco). Cortar em 200
+    # valor 127 (cinza) e movimento real com 255 (branco). Cortar em LIMIAR_BINARIO
     # descarta as sombras.
-    LIMIAR_BINARIO = 200
+    LIMIAR_BINARIO = 254
 
     # Tamanho do kernel da morfologia. Maior = limpeza mais agressiva, mas
     # pode "engolir" detalhes finos. 5x5 é um bom equilíbrio em 720p.
@@ -103,7 +103,7 @@ class DetectorClassico:
             history=500, varThreshold=40, detectShadows=True
         )
 
-        # Kernel elíptico — mais "natural" pra objetos arredondados que retangular.
+        # Kernel elíptico - mais "natural" pra objetos arredondados que retangular.
         self.kernel = cv2.getStructuringElement(
             cv2.MORPH_ELLIPSE, (self.TAMANHO_KERNEL, self.TAMANHO_KERNEL)
         )
@@ -119,11 +119,11 @@ class DetectorClassico:
         interface possa mostrar qualquer uma sob demanda:
 
             {
-                'mascara_bruta'   : ndarray (HxW)    — saída direta do MOG2
-                'mascara_binaria' : ndarray (HxW)    — após threshold (sem sombras)
-                'mascara_limpa'   : ndarray (HxW)    — após morfologia
-                'contornos'       : list de ndarrays — curvas fechadas
-                'caixas'          : list de tuplas   — (x, y, w, h) filtradas
+                'mascara_bruta'   : ndarray (HxW)    - saída direta do MOG2
+                'mascara_binaria' : ndarray (HxW)    - após threshold (sem sombras)
+                'mascara_limpa'   : ndarray (HxW)    - após morfologia
+                'contornos'       : list de ndarrays - contornos fechados
+                'caixas'          : list de tuplas   - (x, y, w, h) filtradas
             }
         """
 
@@ -132,7 +132,7 @@ class DetectorClassico:
         mascara_bruta = self.subtrator.apply(frame)
 
         # ----- 2. Threshold pra eliminar sombras -----
-        # Qualquer pixel acima de 200 vira 255 (branco); o resto vira 0 (preto).
+        # Qualquer pixel acima de LIMIAR_BINARIO vira 255 (branco), o resto vira 0 (preto).
         _, mascara_binaria = cv2.threshold(
             mascara_bruta, self.LIMIAR_BINARIO, 255, cv2.THRESH_BINARY
         )
@@ -150,7 +150,7 @@ class DetectorClassico:
 
         # ----- 4. Contornos -----
         # cv2.RETR_EXTERNAL: ignora contornos internos (buracos dentro de objetos).
-        # cv2.CHAIN_APPROX_SIMPLE: compacta a curva — guarda só os "vértices",
+        # cv2.CHAIN_APPROX_SIMPLE: compacta a curva - guarda só os "vértices",
         #                          economizando memória.
         contornos, _ = cv2.findContours(
             mascara_limpa, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE

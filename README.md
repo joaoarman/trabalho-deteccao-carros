@@ -4,8 +4,8 @@ Sistema de contagem de veículos por minuto em vídeos, desenvolvido como trabal
 
 O sistema implementa **duas abordagens** de detecção e permite compará-las:
 
-1. **OpenCV clássico** — pipeline de visão computacional tradicional (background subtraction → morfologia → contornos → tracking).
-2. **YOLOv8 (deep learning)** — modelo pré-treinado no dataset COCO, capaz de detectar `car`, `truck`, `bus` e `motorcycle`.
+1. **OpenCV clássico** - pipeline de visão computacional tradicional (background subtraction → morfologia → contornos → tracking).
+2. **YOLOv8 (deep learning)** - modelo pré-treinado no dataset COCO, capaz de detectar `car`, `truck`, `bus` e `motorcycle`.
 
 A interface web (Flask) permite ao usuário enviar um vídeo, selecionar uma região de interesse (ROI), escolher o modo de processamento e acompanhar a contagem em tempo real.
 
@@ -78,5 +78,5 @@ O projeto é desenvolvido por etapas. A documentação detalhada de cada etapa f
 
 ## Documentação
 
-- [`CLAUDE.md`](./CLAUDE.md) — fonte de verdade do projeto (contexto, decisões, fluxo, convenções)
-- [`docs/`](./docs/) — um arquivo `.md` por etapa do desenvolvimento, com explicação didática dos conceitos
+- [`CLAUDE.md`](./CLAUDE.md) - fonte de verdade do projeto (contexto, decisões, fluxo, convenções)
+- [`docs/`](./docs/) - um arquivo `.md` por etapa do desenvolvimento, com explicação didática dos conceitos

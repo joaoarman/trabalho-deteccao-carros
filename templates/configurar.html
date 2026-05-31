@@ -1,101 +1,104 @@
 {#
-    configurar.html — Após o upload, o usuário vê o vídeo, desenha a linha
-    de contagem (ROI) e escolhe um dos três modos de processamento.
+configurar.html - Após o upload, o usuário vê o vídeo, desenha a linha
+de contagem (ROI) e escolhe um dos três modos de processamento.
 
-    A diferença pra versão anterior: o vídeo real é exibido via tag <video>
+A diferença pra versão anterior: o vídeo real é exibido via tag <video>
     apontando pra rota /video/<id>, e o canvas é dimensionado pra ficar
-    EXATAMENTE sobre o vídeo. As coordenadas dos cliques são convertidas em
-    valores NORMALIZADOS (0..1) antes de ir pro backend — assim funcionam
-    independentemente de como o vídeo é exibido.
-#}
-{% extends "base.html" %}
+        EXATAMENTE sobre o vídeo. As coordenadas dos cliques são convertidas em
+        valores NORMALIZADOS (0..1) antes de ir pro backend - assim funcionam
+        independentemente de como o vídeo é exibido.
+        #}
+        {% extends "base.html" %}
 
-{% block titulo %}Configurar · Contador de Veículos{% endblock %}
+        {% block titulo %}Configurar · Contador de Veículos{% endblock %}
 
-{% block conteudo %}
-    <div class="cabecalho-processar">
-        <div>
-            <h1>Configurar processamento</h1>
-            <p>Clique sobre o vídeo para adicionar <strong>pontos</strong> e desenhar a <strong>área</strong> de contagem (mínimo 3 pontos). Um veículo é contado quando entra na área — desenhe sobre a cena toda ou só sobre uma faixa. Depois, escolha o modo.</p>
+        {% block conteudo %}
+        <div class="cabecalho-processar">
+            <div>
+                <h1>Configurar processamento</h1>
+                <p>Clique sobre o vídeo para adicionar <strong>pontos</strong> e desenhar a <strong>área</strong> de
+                    contagem (mínimo 3 pontos). Um veículo é contado quando entra na área - desenhe sobre a cena toda ou
+                    só sobre uma faixa. Depois, escolha o modo.</p>
+            </div>
         </div>
-    </div>
 
-    <div class="painel-video">
-        <div class="video-com-canvas" id="area-roi">
-            {% if eh_demo %}
+        <div class="painel-video">
+            <div class="video-com-canvas" id="area-roi">
+                {% if eh_demo %}
                 {# Modo demo: sem vídeo real, só placeholder ilustrativo #}
                 <div class="placeholder-video">
                     <strong>Modo demo</strong>
                     <span>Faça upload de um vídeo real para desenhar a ROI sobre ele.</span>
                 </div>
-            {% else %}
+                {% else %}
                 {#
-                    Tag <video> com o vídeo carregado. autoplay+muted são
+                Tag <video> com o vídeo carregado. autoplay+muted são
                     necessários porque navegadores bloqueiam autoplay com som.
                     `loop` faz o vídeo voltar do início.
-                #}
-                <video id="video-preview"
-                       src="{{ url_for('servir_video', video_id=video_id) }}"
-                       autoplay muted loop playsinline
-                       crossorigin="anonymous"></video>
-            {% endif %}
+                    #}
+                    <video id="video-preview" src="{{ url_for('servir_video', video_id=video_id) }}" autoplay muted loop
+                        playsinline crossorigin="anonymous"></video>
+                    {% endif %}
 
-            {# Canvas sobreposto, na mesma área do vídeo. JS desenha aqui. #}
-            <canvas id="canvas-roi"></canvas>
-        </div>
+                    {# Canvas sobreposto, na mesma área do vídeo. JS desenha aqui. #}
+                    <canvas id="canvas-roi"></canvas>
+            </div>
 
-        <div class="barra-info-video">
-            <span>Arquivo: <strong>{{ nome_arquivo }}</strong></span>
-            <div class="acoes-roi">
-                <span id="status-roi" class="status-roi">Nenhuma área desenhada</span>
-                <button type="button" class="botao botao-secundario" id="botao-desfazer-roi">Desfazer ponto</button>
-                <button type="button" class="botao botao-secundario" id="botao-limpar-roi">Limpar</button>
+            <div class="barra-info-video">
+                <span>Arquivo: <strong>{{ nome_arquivo }}</strong></span>
+                <div class="acoes-roi">
+                    <span id="status-roi" class="status-roi">Nenhuma área desenhada</span>
+                    <button type="button" class="botao botao-secundario" id="botao-desfazer-roi">Desfazer ponto</button>
+                    <button type="button" class="botao botao-secundario" id="botao-limpar-roi">Limpar</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <h2 class="titulo-secao">Escolha o modo de processamento</h2>
+        <h2 class="titulo-secao">Escolha o modo de processamento</h2>
 
-    <div class="opcoes-modo">
+        <div class="opcoes-modo">
 
-        <a href="{{ url_for('processar', video_id=video_id, modo='opencv') }}" class="opcao-modo">
-            <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M3 9h18M9 3v18"/>
-            </svg>
-            <h3>OpenCV clássico</h3>
-            <p>Veja o pipeline passo a passo: background subtraction, morfologia, contornos e tracking.</p>
-        </a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='opencv') }}" class="opcao-modo">
+                <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18M9 3v18" />
+                </svg>
+                <h3>OpenCV clássico</h3>
+                <p>Veja o pipeline passo a passo: background subtraction, morfologia, contornos e tracking.</p>
+            </a>
 
-        <a href="{{ url_for('processar', video_id=video_id, modo='yolo') }}" class="opcao-modo">
-            <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M12 3v18M3 12h18"/>
-            </svg>
-            <h3>YOLOv8</h3>
-            <p>Detecção via deep learning, com classes (car, truck, bus, motorcycle) e confiança.</p>
-        </a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='yolo') }}" class="opcao-modo">
+                <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 3v18M3 12h18" />
+                </svg>
+                <h3>YOLOv8</h3>
+                <p>Detecção via deep learning, com classes (car, truck, bus, motorcycle) e confiança.</p>
+            </a>
 
-        <a href="{{ url_for('processar', video_id=video_id, modo='comparativo') }}" class="opcao-modo">
-            <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="8" height="16" rx="1"/>
-                <rect x="13" y="4" width="8" height="16" rx="1"/>
-            </svg>
-            <h3>Comparativo</h3>
-            <p>OpenCV e YOLO processando o mesmo vídeo, lado a lado, com contadores independentes.</p>
-        </a>
+            <a href="{{ url_for('processar', video_id=video_id, modo='comparativo') }}" class="opcao-modo">
+                <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="8" height="16" rx="1" />
+                    <rect x="13" y="4" width="8" height="16" rx="1" />
+                </svg>
+                <h3>Comparativo</h3>
+                <p>OpenCV e YOLO processando o mesmo vídeo, lado a lado, com contadores independentes.</p>
+            </a>
 
-    </div>
-{% endblock %}
+        </div>
+        {% endblock %}
 
-{% block scripts %}
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    <script>
-        // O JS precisa saber qual vídeo está sendo configurado pra enviar pra API.
-        window.VIDEO_ID = {{ video_id|tojson }};
-        window.EH_DEMO = {{ eh_demo|tojson }};
-        // Polígono já salvo antes (fluxo "Alterar área"); null se ainda não há.
-        window.ROI_INICIAL = {{ roi_inicial|tojson }};
-        inicializarSelecaoROI();
-    </script>
-{% endblock %}
+        {% block scripts %}
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        <script>
+            // O JS precisa saber qual vídeo está sendo configurado pra enviar pra API.
+            window.VIDEO_ID = {{ video_id | tojson }};
+            window.EH_DEMO = {{ eh_demo | tojson }};
+            // Polígono já salvo antes (fluxo "Alterar área"); null se ainda não há.
+            window.ROI_INICIAL = {{ roi_inicial | tojson }};
+            inicializarSelecaoROI();
+        </script>
+        {% endblock %}

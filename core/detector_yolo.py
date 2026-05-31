@@ -1,5 +1,5 @@
 """
-detector_yolo.py — Detecção de veículos com YOLOv8 (deep learning)
+Detecção de veículos com YOLO (deep learning)
 
 Este módulo é a CONTRAPARTE do `detector_classico.py`. Os dois recebem um frame
 e devolvem uma lista de caixas (x, y, w, h), então podem ser usados de forma
@@ -16,41 +16,29 @@ O que é o YOLO (You Only Look Once)
 ----------------------------------------------------------------------------
 
 Detectores antigos passavam uma "janela deslizante" pela imagem, classificando
-cada recorte — caríssimo. O YOLO faz tudo numa ÚNICA passada pela rede (daí o
+cada recorte - caríssimo. O YOLO faz tudo numa ÚNICA passada pela rede (daí o
 nome): divide a imagem em uma grade e, pra cada célula, prevê de uma vez
     - caixas candidatas (posição + tamanho),
     - a confiança de haver um objeto ali,
     - e a probabilidade de cada classe.
 Por isso é rápido o bastante pra rodar em vídeo.
 
-COCO: o modelo `yolov8n.pt` já vem TREINADO no dataset COCO (80 classes de
-objetos do dia a dia). Não precisamos treinar nada — só filtrar as classes que
+COCO: o modelo já vem TREINADO no dataset COCO (80 classes de
+objetos do dia a dia). Não precisamos treinar nada - só filtrar as classes que
 interessam: car, motorcycle, bus, truck.
 
 NMS (Non-Max Suppression): a rede tende a prever várias caixas sobrepostas pro
 mesmo objeto. O NMS mantém a de maior confiança e descarta as que se sobrepõem
-muito (IoU alto). O ultralytics já aplica NMS internamente.
-
-----------------------------------------------------------------------------
-Por que "nano" (yolov8n)?
-----------------------------------------------------------------------------
-
-A família YOLOv8 vem em tamanhos n < s < m < l < x. O `n` (nano) é o menor e
-mais rápido, ideal pra rodar em CPU comum na apresentação. Tem menos precisão
-que os maiores, mas é suficiente pra contar carros — e essa diferença de
-precisão x velocidade é, em si, um bom assunto pra discutir.
+muito (Intersection over Union alto). O ultralytics já aplica NMS internamente.
 """
 
 import os
 import threading
 
-import cv2
-
 from ultralytics import YOLO
 
 
 # IDs das classes de veículos no dataset COCO (a ordem é fixa no COCO).
-#   2 = car, 3 = motorcycle, 5 = bus, 7 = truck
 CLASSES_VEICULOS = {
     2: "car",
     3: "motorcycle",
@@ -58,14 +46,13 @@ CLASSES_VEICULOS = {
     7: "truck",
 }
 
-# Caminho do modelo pré-treinado. Mantemos uma cópia local em `modelos/` pra
-# não depender de internet na hora da apresentação (o ultralytics baixaria
-# automaticamente na primeira execução, mas preferimos garantir offline).
-CAMINHO_MODELO = os.path.join("modelos", "yolov8n.pt")
+# Caminho do modelo pré-treinado.
+NOME_MODELO = "yolov8n.pt"
+CAMINHO_MODELO = os.path.join("modelos", NOME_MODELO)
 
 
 # ----------------------------------------------------------------------------
-# Carregamento do modelo — uma única vez, compartilhado entre streams
+# Carregamento do modelo - uma única vez, compartilhado entre streams
 # ----------------------------------------------------------------------------
 # Carregar a rede custa tempo e memória. Carregamos UMA vez (lazy: só quando o
 # primeiro stream YOLO começa) e reaproveitamos. O lock evita que dois streams
@@ -80,23 +67,21 @@ def _obter_modelo() -> YOLO:
     if _modelo is None:
         with _lock_modelo:
             if _modelo is None:  # checagem dupla: outro thread pode ter carregado
-                # Se a cópia local não existe, passamos só o nome — aí o
+                # Se a cópia local não existe, passamos só o nome - aí o
                 # ultralytics tenta baixar (exige internet nessa primeira vez).
-                origem = CAMINHO_MODELO if os.path.exists(CAMINHO_MODELO) else "yolov8n.pt"
+                origem = CAMINHO_MODELO if os.path.exists(CAMINHO_MODELO) else NOME_MODELO
                 _modelo = YOLO(origem)
     return _modelo
 
 
 class DetectorYOLO:
-    """Detecta veículos num frame usando YOLOv8 pré-treinado em COCO."""
+    """Detecta veículos num frame usando YOLO pré-treinado em COCO."""
 
-    # Confiança mínima pra aceitar uma detecção. Abaixo disso, provavelmente é
-    # um falso positivo. 0.4 é um equilíbrio razoável pro yolov8n.
+    # Confiança mínima pra aceitar uma detecção.
     CONFIANCA_MINIMA = 0.4
 
     def __init__(self, confianca_minima: float = CONFIANCA_MINIMA):
         self.confianca_minima = confianca_minima
-        # Dispara o carregamento já na criação (mais previsível que adiar).
         self.modelo = _obter_modelo()
 
     def processar(self, frame) -> dict:
@@ -104,10 +89,10 @@ class DetectorYOLO:
 
         Retorna:
             {
-                'caixas':    list de (x, y, w, h)  — pro tracker (mesmo formato
+                'caixas':    list de (x, y, w, h)  - pro tracker (mesmo formato
                                                       do detector clássico)
                 'deteccoes': list de dicts {classe, confianca, caixa}
-                             — informação rica pra exibir na interface
+                             - informação rica pra exibir na interface
             }
         """
         # predict() roda a inferência. Parâmetros:
@@ -124,7 +109,7 @@ class DetectorYOLO:
         caixas = []
         deteccoes = []
 
-        # predict() devolve uma lista (um item por imagem); passamos 1 frame só.
+        # predict() devolve uma lista (um item por imagem), passamos 1 frame só.
         resultado = resultados[0]
         for box in resultado.boxes:
             # Coordenadas no formato canto-a-canto (x1,y1) = topo-esquerda,

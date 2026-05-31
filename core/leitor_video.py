@@ -1,9 +1,8 @@
 """
-leitor_video.py — Abstração sobre cv2.VideoCapture
+Abstração sobre cv2.VideoCapture
 
 `cv2.VideoCapture` é a porta de entrada do OpenCV para vídeo. Ele aceita um
-caminho de arquivo (ou índice de webcam) e expõe um objeto que sabe ler
-frames sequencialmente.
+caminho de arquivo e expõe um objeto que sabe ler frames sequencialmente.
 
 Esta classe não muda a lógica, só dá nomes em português e organiza o que
 geralmente é espalhado em chamadas soltas.
@@ -14,9 +13,9 @@ Conceitos importantes
 
 - Um vídeo é uma SEQUÊNCIA DE FRAMES (imagens) exibidas a uma taxa (FPS).
 - Cada frame, no OpenCV, vem como um array numpy de shape (altura, largura, 3).
-  Os 3 canais são B, G, R (nessa ordem — não R, G, B, é uma peculiaridade do
+  Os 3 canais são B, G, R (nessa ordem - não R, G, B, é uma peculiaridade do
   OpenCV por motivos históricos).
-- `cap.read()` devolve uma tupla `(ret, frame)`. `ret` é True se conseguiu ler;
+- `cap.read()` devolve uma tupla `(ret, frame)`. `ret` é True se conseguiu ler o frame,
   False quando o vídeo acabou ou houve erro.
 """
 
@@ -34,15 +33,15 @@ class LeitorVideo:
         self.caminho = caminho
 
     # ------------------------------------------------------------------
-    # Propriedades — leitura de metadados do vídeo
+    # Propriedades - leitura de metadados do vídeo
     # ------------------------------------------------------------------
 
     @property
     def fps(self) -> float:
         """Frames por segundo. Crítico pra calcular taxa de veículos/minuto.
 
-        Alguns formatos de vídeo não trazem FPS confiável; nesse caso o OpenCV
-        devolve 0. Caímos pra 25 (valor seguro pra vídeos NTSC/PAL típicos).
+        Alguns formatos de vídeo não trazem FPS confiável, nesse caso o OpenCV
+        devolve 0. Caímos pra 25 (valor seguro pra vídeos NTSC/PAL, típicos de câmeras de trânsito).
         """
         valor = self._cap.get(cv2.CAP_PROP_FPS)
         return valor if valor and valor > 0 else 25.0
@@ -76,13 +75,13 @@ class LeitorVideo:
         self._cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def fechar(self):
-        """Libera o arquivo. Importante chamar; senão o handle fica aberto."""
+        """Libera o arquivo. Importante chamar, senão o vídeo fica aberto."""
         if self._cap is not None:
             self._cap.release()
             self._cap = None
 
     # ------------------------------------------------------------------
-    # Suporte ao `with` — boa prática pra liberar o arquivo automaticamente
+    # Suporte ao `with` - boa prática pra liberar o arquivo automaticamente
     # ------------------------------------------------------------------
 
     def __enter__(self):
@@ -92,5 +91,5 @@ class LeitorVideo:
         self.fechar()
 
     def __del__(self):
-        # Tentativa de liberar mesmo se o usuário esquecer de chamar fechar()
+        # Tentativa de liberar mesmo se esquecermos de chamar fechar()
         self.fechar()

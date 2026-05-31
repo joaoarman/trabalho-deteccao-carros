@@ -1,24 +1,15 @@
-# =============================================================================
-# .gitignore — arquivos e pastas que NÃO devem ser versionados pelo git
-# =============================================================================
-
 # --- Python ---
-# Bytecode compilado pelo interpretador. Regenerado automaticamente, não faz
-# sentido versionar.
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
 # --- Ambiente virtual ---
-# Cada integrante cria o seu localmente com `python -m venv venv`.
-# Versionar o venv quebraria tudo entre sistemas operacionais diferentes.
 venv/
 env/
 .venv/
 
 # --- Configurações de editor ---
-# Específicas da máquina de cada desenvolvedor.
 .vscode/
 .idea/
 *.swp
@@ -30,13 +21,10 @@ Thumbs.db
 desktop.ini
 
 # --- Pastas de runtime do projeto ---
-# Serão criadas conforme o sistema for usado. Não fazem parte do código-fonte.
-uploads/         # vídeos que o usuário envia pela interface
-outputs/         # vídeos processados gerados pelo sistema
+uploads/
+outputs/
 
 # --- Modelos do YOLO ---
-# Arquivos .pt são pesos pré-treinados (podem ter dezenas de MB).
-# São baixados automaticamente pela ultralytics na primeira execução.
 *.pt
 
 # --- Logs ---

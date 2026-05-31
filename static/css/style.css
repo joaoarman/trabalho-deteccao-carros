@@ -1,19 +1,3 @@
-/* ==========================================================================
-   style.css — Estilos do Contador de Veículos
-
-   Organização do arquivo:
-     1. Variáveis (cores, espaçamentos, raios)
-     2. Reset e estilos globais
-     3. Layout (container, header, footer)
-     4. Componentes (card, botão, form, alertas)
-     5. Páginas específicas (upload, configurar, processar)
-   ========================================================================== */
-
-
-/* 1. VARIÁVEIS GLOBAIS ----------------------------------------------------- */
-/* :root é o "topo" da árvore CSS. Variáveis declaradas aqui ficam acessíveis
-   no documento inteiro via var(--nome). Trocar uma cor aqui muda em todo o
-   site — facilita manter tema consistente. */
 :root {
     --cor-fundo: #f7f8fb;
     --cor-card: #ffffff;
@@ -44,10 +28,8 @@
     --transicao: all 0.15s ease;
 }
 
-
-/* 2. RESET E ESTILOS GLOBAIS ---------------------------------------------- */
 *, *::before, *::after {
-    box-sizing: border-box;     /* padding e border não estouram o width */
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
@@ -78,8 +60,6 @@ h3 { font-size: 1.125rem; }
 
 p { color: var(--cor-texto-suave); }
 
-
-/* 3. LAYOUT --------------------------------------------------------------- */
 .container {
     width: 100%;
     max-width: 1100px;
@@ -136,10 +116,6 @@ p { color: var(--cor-texto-suave); }
     font-size: 0.85rem;
 }
 
-
-/* 4. COMPONENTES --------------------------------------------------------- */
-
-/* CARD — bloco branco com sombra suave, base visual de toda página */
 .card {
     background: var(--cor-card);
     border: 1px solid var(--cor-borda);
@@ -148,7 +124,6 @@ p { color: var(--cor-texto-suave); }
     box-shadow: var(--sombra-suave);
 }
 
-/* BOTÃO primário (ação principal) */
 .botao {
     display: inline-flex;
     align-items: center;
@@ -168,7 +143,6 @@ p { color: var(--cor-texto-suave); }
 .botao:hover { background: var(--cor-primaria-hover); text-decoration: none; }
 .botao:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* BOTÃO secundário (ações menos importantes) */
 .botao-secundario {
     background: var(--cor-card);
     color: var(--cor-texto);
@@ -176,7 +150,6 @@ p { color: var(--cor-texto-suave); }
 }
 .botao-secundario:hover { background: var(--cor-fundo); }
 
-/* ALERTAS (mensagens flash do Flask) */
 .alertas { margin-bottom: 1.5rem; }
 .alerta {
     background: var(--cor-aviso-suave);
@@ -188,10 +161,7 @@ p { color: var(--cor-texto-suave); }
     border: 1px solid #fde68a;
 }
 
-
-/* 5. PÁGINAS ESPECÍFICAS ------------------------------------------------- */
-
-/* ---------- TELA DE UPLOAD ---------- */
+/* Tela de upload */
 .hero {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -206,9 +176,6 @@ p { color: var(--cor-texto-suave); }
     margin: 0 auto;
 }
 
-/* Caixa de upload com efeito de drag-and-drop visual.
-   display: block é obrigatório porque <label> é inline por padrão — sem ele
-   o elemento não preenche a largura do card e o layout quebra. */
 .area-upload {
     display: block;
     border: 2px dashed var(--cor-borda-forte);
@@ -239,7 +206,7 @@ p { color: var(--cor-texto-suave); }
     font-size: 0.9rem;
 }
 .area-upload input[type="file"] {
-    display: none;             /* esconde o input feio do navegador */
+    display: none;
 }
 
 .nome-arquivo-selecionado {
@@ -249,7 +216,7 @@ p { color: var(--cor-texto-suave); }
     color: var(--cor-sucesso);
     border-radius: var(--raio-pequeno);
     font-size: 0.9rem;
-    display: none;             /* aparece via JS quando o usuário escolhe arquivo */
+    display: none;
 }
 .nome-arquivo-selecionado.visivel { display: block; }
 
@@ -280,8 +247,7 @@ p { color: var(--cor-texto-suave); }
     margin: 0;
 }
 
-
-/* ---------- TELA DE CONFIGURAR (ROI + escolha de modo) ---------- */
+/* Tela de configurar */
 .painel-configurar {
     display: grid;
     grid-template-columns: 1fr;
@@ -315,7 +281,7 @@ p { color: var(--cor-texto-suave); }
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;       /* mantém proporção, deixa barras pretas se preciso */
+    object-fit: contain;
     background: #0f172a;
     display: block;
 }
@@ -387,8 +353,7 @@ p { color: var(--cor-texto-suave); }
 .opcao-modo h3 { color: var(--cor-texto); }
 .opcao-modo p { font-size: 0.875rem; margin: 0; }
 
-
-/* ---------- TELA DE PROCESSAMENTO ---------- */
+/* Tela de processar */
 .cabecalho-processar {
     display: flex;
     justify-content: space-between;
@@ -422,7 +387,6 @@ p { color: var(--cor-texto-suave); }
     color: white;
 }
 
-/* Grid principal das telas de processamento: vídeo à esquerda, painel à direita */
 .grade-processar {
     display: grid;
     grid-template-columns: 1fr 320px;
@@ -591,7 +555,7 @@ p { color: var(--cor-texto-suave); }
     padding: 0.5rem 0;
 }
 
-/* Modo comparativo — dois vídeos lado a lado */
+/* Modo comparativo - dois vídeos lado a lado */
 .grade-comparativo {
     display: grid;
     grid-template-columns: 1fr 1fr;

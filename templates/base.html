@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,19 +10,21 @@
          mesmo se o app for servido em uma sub-rota. -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
 
     <!-- ================================================================ -->
-    <!-- CABEÇALHO — visível em todas as telas                            -->
+    <!-- CABEÇALHO - visível em todas as telas                            -->
     <!-- ================================================================ -->
     <header class="cabecalho">
         <div class="container cabecalho-conteudo">
             <a href="{{ url_for('index') }}" class="logo" title="Voltar ao início">
                 <!-- Ícone SVG de carro (inline, sem dependências externas) -->
-                <svg class="logo-icone" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM19 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"/>
-                    <path d="M3 17V9l2-4h14l2 4v8"/>
-                    <path d="M7 9h10"/>
+                <svg class="logo-icone" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM19 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" />
+                    <path d="M3 17V9l2-4h14l2 4v8" />
+                    <path d="M7 9h10" />
                 </svg>
                 <span class="logo-texto">Contador de Veículos</span>
             </a>
@@ -30,20 +33,20 @@
     </header>
 
     <!-- ================================================================ -->
-    <!-- CONTEÚDO PRINCIPAL — preenchido por cada página                  -->
+    <!-- CONTEÚDO PRINCIPAL - preenchido por cada página                  -->
     <!-- ================================================================ -->
     <main class="conteudo container">
 
         <!-- Mensagens "flash": notificações curtas que o Flask envia via
              session entre requisições (ex: "vídeo não suportado"). -->
         {% with mensagens = get_flashed_messages() %}
-            {% if mensagens %}
-                <div class="alertas">
-                    {% for mensagem in mensagens %}
-                        <div class="alerta">{{ mensagem }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        {% if mensagens %}
+        <div class="alertas">
+            {% for mensagem in mensagens %}
+            <div class="alerta">{{ mensagem }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
 
         {% block conteudo %}{% endblock %}
@@ -61,4 +64,5 @@
     <!-- Bloco onde cada página pode adicionar seu JS específico -->
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
