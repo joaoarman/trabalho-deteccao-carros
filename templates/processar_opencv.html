@@ -31,12 +31,6 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
             {# ============ VÍDEO PROCESSADO (STREAM) ============ #}
             <div class="painel-video">
                 <div class="video-com-canvas">
-                    {% if eh_demo %}
-                    <div class="placeholder-video">
-                        <strong>Modo demo</strong>
-                        <span>Sem vídeo real para processar. Faça upload na tela inicial.</span>
-                    </div>
-                    {% else %}
                     {#
                     A <img> recebe o stream multipart/x-mixed-replace.
                     O navegador troca o conteúdo automaticamente a cada
@@ -44,7 +38,6 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
                     #}
                     <img class="stream" id="stream-video"
                         src="{{ url_for('stream', video_id=video_id, modo='opencv') }}" alt="Vídeo sendo processado">
-                    {% endif %}
                 </div>
                 <div class="descricao-etapa">
                     <strong id="descricao-etapa-titulo">1. Frame original</strong> -
@@ -66,12 +59,10 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
                     stream começa e o contador é recriado - a contagem zera.
                     Atalho de teclado: tecla "A".
                     #}
-                    {% if not eh_demo %}
                     <a href="{{ url_for('configurar', video_id=video_id) }}" class="botao botao-secundario"
                         id="botao-alterar-area">
                         ↻ Alterar área e zerar (A)
                     </a>
-                    {% endif %}
                 </div>
 
                 {# Lista de etapas - clicar troca o display do stream ao vivo. #}
@@ -122,7 +113,6 @@ Quando o usuário clica numa etapa, JS faz POST /api/etapa/<id>. No
         <script src="{{ url_for('static', filename='js/app.js') }}"></script>
         <script>
             window.VIDEO_ID = {{ video_id | tojson }};
-            window.EH_DEMO = {{ eh_demo | tojson }};
             inicializarPipelineOpenCV();
         </script>
         {% endblock %}

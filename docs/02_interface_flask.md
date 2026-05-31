@@ -135,10 +135,6 @@ python app.py
 
 Abrir [http://localhost:5000](http://localhost:5000). O Flask reinicia automaticamente quando `app.py` é salvo (porque rodamos com `debug=True`).
 
-### Truque: rota demo
-
-Pra ver a interface sem precisar fazer upload, usamos `video_id="demo"`. No `index.html` há um botão "Ver demo sem upload" que vai direto pra `/configurar/demo`. As funções aceitam esse ID especial e renderizam com um nome de arquivo fake (`demo.mp4`).
-
 ### Interatividade no navegador (app.js)
 
 Três funções, uma por tipo de tela:

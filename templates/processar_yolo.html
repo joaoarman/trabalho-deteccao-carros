@@ -27,16 +27,9 @@ ambos atualizados por polling - igual ao modo OpenCV.
     {# Vídeo com bounding boxes do YOLO #}
     <div class="painel-video">
         <div class="video-com-canvas">
-            {% if eh_demo %}
-            <div class="placeholder-video">
-                <strong>YOLO · pré-treinado em COCO</strong>
-                <span>Faça upload de um vídeo real para ver as detecções.</span>
-            </div>
-            {% else %}
             {# A <img> recebe o stream MJPEG do modo YOLO. #}
             <img class="stream" id="stream-video" src="{{ url_for('stream', video_id=video_id, modo='yolo') }}"
                 alt="Vídeo sendo processado pelo YOLO">
-            {% endif %}
         </div>
         <div class="descricao-etapa">
             <strong>Detecção em uma passada</strong> -
@@ -52,10 +45,8 @@ ambos atualizados por polling - igual ao modo OpenCV.
             <h3>Veículos contados</h3>
             <div class="contador-numero" id="contador-total">0</div>
             <div class="contador-detalhe" id="contador-detalhe">0 por minuto</div>
-            {% if not eh_demo %}
             <a href="{{ url_for('configurar', video_id=video_id) }}" class="botao botao-secundario">↻ Alterar área e
                 zerar</a>
-            {% endif %}
         </div>
 
         <div class="lista-deteccoes">
@@ -74,7 +65,6 @@ ambos atualizados por polling - igual ao modo OpenCV.
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script>
     window.VIDEO_ID = {{ video_id | tojson }};
-    window.EH_DEMO = {{ eh_demo | tojson }};
     inicializarYOLO();
 </script>
 {% endblock %}

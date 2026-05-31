@@ -208,7 +208,7 @@ Cada etapa concluída deve gerar um arquivo `.md` de documentação corresponden
 | 2026-05-27 | Etapa 1 concluída: setup do ambiente | Criados `requirements.txt`, `.gitignore`, `README.md`, `docs/01_setup_ambiente.md` |
 | 2026-05-27 | Etapa 2 concluída: interface Flask (sem backend funcional) | Criados `app.py`, 6 templates, `style.css`, `app.js`, `docs/02_interface_flask.md` |
 | 2026-05-27 | CSS puro (sem Bootstrap/Tailwind) e JS vanilla (sem React/Vue) | Coerente com filosofia de "sem mágica oculta" |
-| 2026-05-27 | Rota especial `video_id="demo"` para preview sem upload | Facilita desenvolvimento e demonstração da interface |
+| 2026-05-31 | Removido modo demo (`video_id="demo"`) | Fluxo exige upload real; simplifica rotas, templates e JS |
 | 2026-05-27 | Etapa 3 concluída: pipeline OpenCV clássico funcional | Criados `core/leitor_video.py`, `core/detector_classico.py`, `core/tracker.py`, `core/contador.py`, `docs/03_pipeline_opencv.md` |
 | 2026-05-27 | Etapa 4 concluída: streaming MJPEG + API JSON funcional | Reescrita do `app.py` com rotas de stream/API; templates atualizados com vídeo real e polling do contador; `docs/04_streaming_tempo_real.md` |
 | 2026-05-27 | MJPEG + polling escolhidos sobre WebSocket | Mais didático, menos infraestrutura, suficiente pro escopo |

@@ -24,13 +24,6 @@ A diferença pra versão anterior: o vídeo real é exibido via tag <video>
 
         <div class="painel-video">
             <div class="video-com-canvas" id="area-roi">
-                {% if eh_demo %}
-                {# Modo demo: sem vídeo real, só placeholder ilustrativo #}
-                <div class="placeholder-video">
-                    <strong>Modo demo</strong>
-                    <span>Faça upload de um vídeo real para desenhar a ROI sobre ele.</span>
-                </div>
-                {% else %}
                 {#
                 Tag <video> com o vídeo carregado. autoplay+muted são
                     necessários porque navegadores bloqueiam autoplay com som.
@@ -38,7 +31,6 @@ A diferença pra versão anterior: o vídeo real é exibido via tag <video>
                     #}
                     <video id="video-preview" src="{{ url_for('servir_video', video_id=video_id) }}" autoplay muted loop
                         playsinline crossorigin="anonymous"></video>
-                    {% endif %}
 
                     {# Canvas sobreposto, na mesma área do vídeo. JS desenha aqui. #}
                     <canvas id="canvas-roi"></canvas>
@@ -96,7 +88,6 @@ A diferença pra versão anterior: o vídeo real é exibido via tag <video>
         <script>
             // O JS precisa saber qual vídeo está sendo configurado pra enviar pra API.
             window.VIDEO_ID = {{ video_id | tojson }};
-            window.EH_DEMO = {{ eh_demo | tojson }};
             // Polígono já salvo antes (fluxo "Alterar área"); null se ainda não há.
             window.ROI_INICIAL = {{ roi_inicial | tojson }};
             inicializarSelecaoROI();

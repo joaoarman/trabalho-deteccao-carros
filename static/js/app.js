@@ -125,7 +125,7 @@ function inicializarSelecaoROI() {
         pontos.push({ x, y });
         redesenhar();
         // A partir de 3 pontos a área é válida - salva a cada novo ponto.
-        if (pontos.length >= 3 && !window.EH_DEMO) {
+        if (pontos.length >= 3) {
             salvarROI();
         } else {
             atualizarStatus();
@@ -153,7 +153,7 @@ function inicializarSelecaoROI() {
         if (pontos.length === 0) return;
         pontos.pop();
         redesenhar();
-        if (pontos.length >= 3 && !window.EH_DEMO) salvarROI();
+        if (pontos.length >= 3) salvarROI();
         else atualizarStatus();
     }
 
@@ -286,13 +286,11 @@ function inicializarPipelineOpenCV() {
         if (botaoProxima) botaoProxima.disabled = numero === itensEtapa.length;
 
         // Comunica ao backend
-        if (!window.EH_DEMO) {
-            fetch(`/api/etapa/${window.VIDEO_ID}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ etapa: numero }),
-            }).catch((err) => console.error("Erro ao mudar etapa:", err));
-        }
+        fetch(`/api/etapa/${window.VIDEO_ID}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ etapa: numero }),
+        }).catch((err) => console.error("Erro ao mudar etapa:", err));
     }
 
     itensEtapa.forEach((item) => {
@@ -321,23 +319,21 @@ function inicializarPipelineOpenCV() {
     // setInterval chama a função a cada N ms. Aqui buscamos o contador
     // duas vezes por segundo. Não é "tempo real" estrito, mas é mais que
     // suficiente - e bem mais simples que WebSockets.
-    if (!window.EH_DEMO) {
-        async function atualizarContador() {
-            try {
-                const resp = await fetch(
-                    `/api/contador/${window.VIDEO_ID}/opencv`,
-                );
-                const data = await resp.json();
-                if (contadorTotal) contadorTotal.textContent = data.total;
-                if (contadorDetalhe)
-                    contadorDetalhe.textContent = `${data.por_minuto} por minuto`;
-            } catch (err) {
-                // Silencioso - se o servidor reiniciou ou rede caiu, só ignora
-            }
+    async function atualizarContador() {
+        try {
+            const resp = await fetch(
+                `/api/contador/${window.VIDEO_ID}/opencv`,
+            );
+            const data = await resp.json();
+            if (contadorTotal) contadorTotal.textContent = data.total;
+            if (contadorDetalhe)
+                contadorDetalhe.textContent = `${data.por_minuto} por minuto`;
+        } catch (err) {
+            // Silencioso - se o servidor reiniciou ou rede caiu, só ignora
         }
-        setInterval(atualizarContador, 500);
-        atualizarContador(); // executa uma vez imediatamente
     }
+    setInterval(atualizarContador, 500);
+    atualizarContador(); // executa uma vez imediatamente
 }
 
 /* ----------------------------------------------------------------------------
@@ -346,8 +342,6 @@ function inicializarPipelineOpenCV() {
    (classe + confiança) pra preencher o painel lateral.
    ---------------------------------------------------------------------------- */
 function inicializarYOLO() {
-    if (window.EH_DEMO) return;
-
     const contadorTotal = document.getElementById("contador-total");
     const contadorDetalhe = document.getElementById("contador-detalhe");
     const listaDeteccoes = document.getElementById("lista-deteccoes");
@@ -404,8 +398,6 @@ function inicializarYOLO() {
    vez do frame cru.
    ---------------------------------------------------------------------------- */
 function inicializarComparativo() {
-    if (window.EH_DEMO) return;
-
     // Garante que o lado OpenCV mostre a etapa final (tracking + contagem).
     fetch(`/api/etapa/${window.VIDEO_ID}`, {
         method: "POST",

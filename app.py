@@ -147,38 +147,26 @@ def upload():
 def configurar(video_id):
     """Tela onde o usuário desenha a ROI e escolhe o modo de processamento."""
     # `roi_inicial` repovoa o polígono já desenhado antes (fluxo "Alterar área").
-    roi_inicial = None
-    if video_id != "demo":
-        estado = estado_videos.get(video_id)
-        if not estado or not estado.get("caminho"):
-            flash("Vídeo não encontrado. Faça o upload primeiro.")
-            return redirect(url_for("index"))
-        nome_arquivo = os.path.basename(estado["caminho"])
-        roi_inicial = estado.get("roi")
-    else:
-        nome_arquivo = "demo.mp4"
+    estado = estado_videos.get(video_id)
+    if not estado or not estado.get("caminho"):
+        flash("Vídeo não encontrado. Faça o upload primeiro.")
+        return redirect(url_for("index"))
 
     return render_template(
         "configurar.html",
         video_id=video_id,
-        nome_arquivo=nome_arquivo,
-        roi_inicial=roi_inicial,
-        # `eh_demo` desativa partes que dependem de vídeo real (stream, preview).
-        eh_demo=(video_id == "demo"),
+        nome_arquivo=os.path.basename(estado["caminho"]),
+        roi_inicial=estado.get("roi"),
     )
 
 
 @app.route("/processar/<video_id>/<modo>")
 def processar(video_id, modo):
     """Tela de processamento. modo ∈ {opencv, yolo, comparativo}."""
-    if video_id != "demo":
-        estado = estado_videos.get(video_id)
-        if not estado or not estado.get("caminho"):
-            flash("Vídeo não encontrado. Faça o upload primeiro.")
-            return redirect(url_for("index"))
-        nome_arquivo = os.path.basename(estado["caminho"])
-    else:
-        nome_arquivo = "demo.mp4"
+    estado = estado_videos.get(video_id)
+    if not estado or not estado.get("caminho"):
+        flash("Vídeo não encontrado. Faça o upload primeiro.")
+        return redirect(url_for("index"))
 
     templates_por_modo = {
         "opencv": "processar_opencv.html",
@@ -193,9 +181,8 @@ def processar(video_id, modo):
     return render_template(
         template,
         video_id=video_id,
-        nome_arquivo=nome_arquivo,
+        nome_arquivo=os.path.basename(estado["caminho"]),
         modo=modo,
-        eh_demo=(video_id == "demo"),
     )
 
 
@@ -557,7 +544,7 @@ def _converter_poligono(roi_normalizada, largura, altura):
     Retorna uma lista de vértices [(x, y), ...]. Se nenhuma área válida foi
     desenhada, usa um default: uma faixa central horizontal cobrindo toda a
     largura (35%..65% da altura). Funciona como uma "linha grossa" no meio da
-    cena - útil pro demo funcionar mesmo sem o usuário desenhar nada.
+    cena - fallback quando o usuário ainda não desenhou uma área válida.
     """
     if not roi_normalizada or len(roi_normalizada) < 3:
         y_topo = int(0.35 * altura)
