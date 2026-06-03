@@ -426,15 +426,10 @@ p { color: var(--cor-texto-suave); }
     margin-bottom: 0.75rem;
 }
 
-.contador-acoes,
-.comparativo-acoes {
+.contador-acoes {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-}
-
-.comparativo-acoes {
-    margin-top: 0.75rem;
 }
 
 .lista-etapas {
@@ -562,42 +557,6 @@ p { color: var(--cor-texto-suave); }
     color: var(--cor-texto-muito-suave);
     font-size: 0.85rem;
     padding: 0.5rem 0;
-}
-
-.grade-comparativo {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-}
-@media (max-width: 900px) {
-    .grade-comparativo { grid-template-columns: 1fr; }
-}
-.painel-comparativo {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.painel-comparativo .rotulo-painel {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: var(--cor-texto);
-}
-.rotulo-bolinha {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--cor-primaria);
-}
-.aviso-comparativo {
-    margin-top: 1.25rem;
-    padding: 0.75rem 1rem;
-    background: var(--cor-card);
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio);
-    font-size: 0.85rem;
-    color: var(--cor-texto-suave);
 }
 
 /* ---- Painel de parâmetros do detector (collapsible) ---- */

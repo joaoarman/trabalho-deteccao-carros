@@ -83,9 +83,6 @@ def extensao_valida(nome_arquivo: str) -> bool:
 #         'roi':        list|None - polígono [[x,y], ...] em coords NORMALIZADAS
 #         'etapa':      int       - etapa (1 a 5) que o usuário quer ver (só OpenCV)
 #         'contadores': dict      - modo ('opencv'/'yolo') -> Contador
-#                                   Guardamos um por modo porque o comparativo
-#                                   roda os dois ao mesmo tempo, cada um com a
-#                                   sua própria contagem.
 #         'deteccoes':  list      - detecções do último frame YOLO (classe +
 #                                   confiança), pra alimentar a lista na tela.
 #     }
@@ -166,7 +163,7 @@ def configurar(video_id):
 
 @app.route("/processar/<video_id>/<modo>")
 def processar(video_id, modo):
-    """Tela de processamento. modo ∈ {opencv, yolo, comparativo}."""
+    """Tela de processamento. modo ∈ {opencv, yolo}."""
     estado = estado_videos.get(video_id)
     if not estado or not estado.get("caminho"):
         flash("Vídeo não encontrado. Faça o upload primeiro.")
@@ -175,7 +172,6 @@ def processar(video_id, modo):
     templates_por_modo = {
         "opencv": "processar_opencv.html",
         "yolo": "processar_yolo.html",
-        "comparativo": "processar_comparativo.html",
     }
     template = templates_por_modo.get(modo)
     if template is None:
