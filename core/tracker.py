@@ -96,6 +96,12 @@ class CentroidTracker:
         self.max_desaparecido = max_desaparecido
         self.distancia_maxima = distancia_maxima
 
+    def atualizar_params(self, max_desaparecido=None, distancia_maxima=None):
+        if max_desaparecido is not None:
+            self.max_desaparecido = max_desaparecido
+        if distancia_maxima is not None:
+            self.distancia_maxima = distancia_maxima
+
     # ----------------------------------------------------------------------
     # Operações internas
     # ----------------------------------------------------------------------

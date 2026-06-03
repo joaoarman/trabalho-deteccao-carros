@@ -79,6 +79,76 @@
             </div>
         </div>
 
+        <details class="painel-params-mog2">
+            <summary>Parâmetros do detector</summary>
+
+            <div class="param-corpo">
+                <div class="param-secao-titulo">MOG2</div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-history">history</label>
+                        <span class="param-valor" id="param-history-valor">500</span>
+                    </div>
+                    <input type="range" id="param-history" min="10" max="2000" step="10" value="500">
+                </div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-var-threshold">varThreshold</label>
+                        <span class="param-valor" id="param-var-threshold-valor">40</span>
+                    </div>
+                    <input type="range" id="param-var-threshold" min="1" max="200" step="1" value="40">
+                </div>
+
+                <div class="param-linha param-linha-toggle">
+                    <label for="param-detect-shadows">detectShadows</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="param-detect-shadows" checked>
+                        <span class="toggle-pista"></span>
+                    </label>
+                </div>
+
+                <div class="param-secao-titulo">Morfologia</div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-limiar-binario">limiarBinario</label>
+                        <span class="param-valor" id="param-limiar-binario-valor">254</span>
+                    </div>
+                    <input type="range" id="param-limiar-binario" min="100" max="255" step="1" value="254">
+                </div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-tamanho-kernel">tamanhoKernel</label>
+                        <span class="param-valor" id="param-tamanho-kernel-valor">5</span>
+                    </div>
+                    <input type="range" id="param-tamanho-kernel" min="1" max="21" step="2" value="5">
+                </div>
+
+                <div class="param-secao-titulo">Filtro de área (px²)</div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-area-minima">áreaMínima</label>
+                        <span class="param-valor" id="param-area-minima-valor">1500</span>
+                    </div>
+                    <input type="range" id="param-area-minima" min="100" max="20000" step="100" value="1500">
+                </div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-area-maxima">áreaMaxima</label>
+                        <span class="param-valor" id="param-area-maxima-valor">80000</span>
+                    </div>
+                    <input type="range" id="param-area-maxima" min="5000" max="200000" step="1000" value="80000">
+                </div>
+
+                <div class="param-status" id="param-status"></div>
+            </div>
+        </details>
+
     </aside>
 </div>
 {% endblock %}

@@ -315,6 +315,9 @@ function inicializarPipelineOpenCV() {
 
     selecionarEtapa(5);
 
+    // ----- Parâmetros MOG2 ao vivo -----
+    inicializarParamsMOG2();
+
     // ----- Polling do contador -----
     // setInterval chama a função a cada N ms. Aqui buscamos o contador
     // duas vezes por segundo. Não é "tempo real" estrito, mas é mais que
@@ -389,6 +392,98 @@ function inicializarYOLO() {
 
     setInterval(atualizar, 500);
     atualizar();
+}
+
+/* ----------------------------------------------------------------------------
+   Controles ao vivo dos parâmetros do detector clássico (só no modo OpenCV).
+   Sliders atualizam o valor exibido instantaneamente e enviam ao backend após
+   um debounce de 400ms pra não disparar um request por pixel arrastado.
+   O toggle de sombras aplica imediatamente por ser binário.
+   ---------------------------------------------------------------------------- */
+function inicializarParamsMOG2() {
+    const controles = [
+        { id: "param-history",          valorId: "param-history-valor",          tipo: "int"   },
+        { id: "param-var-threshold",     valorId: "param-var-threshold-valor",     tipo: "float" },
+        { id: "param-limiar-binario",    valorId: "param-limiar-binario-valor",    tipo: "int"   },
+        { id: "param-tamanho-kernel",    valorId: "param-tamanho-kernel-valor",    tipo: "int"   },
+        { id: "param-area-minima",       valorId: "param-area-minima-valor",       tipo: "int"   },
+        { id: "param-area-maxima",       valorId: "param-area-maxima-valor",       tipo: "int"   },
+    ];
+
+    const checkShadows = document.getElementById("param-detect-shadows");
+    const statusEl     = document.getElementById("param-status");
+
+    // Valida que ao menos um slider existe (página correta)
+    if (!document.getElementById(controles[0].id)) return;
+
+    let debounceTimer = null;
+
+    function mostrarStatus(ok) {
+        if (!statusEl) return;
+        statusEl.textContent = ok ? "✓ Aplicado" : "Erro ao aplicar";
+        statusEl.style.color = ok ? "var(--cor-sucesso)" : "var(--cor-aviso)";
+        statusEl.style.opacity = "1";
+        clearTimeout(statusEl._fadeTimer);
+        statusEl._fadeTimer = setTimeout(() => { statusEl.style.opacity = "0"; }, 2000);
+    }
+
+    function coletarPayload() {
+        const payload = { detect_shadows: checkShadows ? checkShadows.checked : true };
+        const chaves = {
+            "param-history":          "history",
+            "param-var-threshold":    "var_threshold",
+            "param-limiar-binario":   "limiar_binario",
+            "param-tamanho-kernel":   "tamanho_kernel",
+            "param-area-minima":      "area_minima",
+            "param-area-maxima":      "area_maxima",
+        };
+        controles.forEach(({ id, tipo }) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            payload[chaves[id]] = tipo === "int"
+                ? parseInt(el.value, 10)
+                : parseFloat(el.value);
+        });
+        return payload;
+    }
+
+    async function enviarParams(payload) {
+        try {
+            const resp = await fetch(`/api/params/${window.VIDEO_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            mostrarStatus(data.ok);
+        } catch (err) {
+            mostrarStatus(false);
+        }
+    }
+
+    function agendarEnvio() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => enviarParams(coletarPayload()), 400);
+    }
+
+    // Liga cada slider: atualiza display + agenda envio
+    controles.forEach(({ id, valorId }) => {
+        const slider = document.getElementById(id);
+        const display = document.getElementById(valorId);
+        if (!slider) return;
+        slider.addEventListener("input", () => {
+            if (display) display.textContent = slider.value;
+            agendarEnvio();
+        });
+    });
+
+    // Toggle aplica imediatamente
+    if (checkShadows) {
+        checkShadows.addEventListener("change", () => {
+            clearTimeout(debounceTimer);
+            enviarParams(coletarPayload());
+        });
+    }
 }
 
 /* ----------------------------------------------------------------------------

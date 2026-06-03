@@ -103,6 +103,15 @@ def garantir_estado(video_id: str):
                 "etapa": 5,
                 "contadores": {},
                 "deteccoes": [],
+                "params_detector": {
+                    "history": 500,
+                    "var_threshold": 40,
+                    "detect_shadows": True,
+                    "area_minima": 1500,
+                    "area_maxima": 80000,
+                    "limiar_binario": 254,
+                    "tamanho_kernel": 5,
+                },
             }
 
 
@@ -275,6 +284,73 @@ def api_deteccoes(video_id):
     })
 
 
+@app.route("/api/params/<video_id>", methods=["GET"])
+def api_get_params(video_id):
+    """Devolve os parâmetros atuais do detector."""
+    estado = estado_videos.get(video_id) or {}
+    return jsonify(estado.get("params_detector", {}))
+
+
+@app.route("/api/params/<video_id>", methods=["POST"])
+def api_set_params(video_id):
+    """Atualiza parâmetros do detector em tempo real (sem reiniciar o stream)."""
+    dados = request.get_json(silent=True) or {}
+
+    inteiros_positivos = {
+        "history": (1, 5000),
+        "area_minima": (1, 500000),
+        "area_maxima": (1, 500000),
+        "limiar_binario": (1, 255),
+        "tamanho_kernel": (1, 31),
+    }
+    numeros_positivos = {
+        "var_threshold": (0.1, 1000),
+    }
+
+    convertidos = {}
+    erros = []
+
+    for campo, (minimo, maximo) in inteiros_positivos.items():
+        valor = dados.get(campo)
+        if valor is None:
+            continue
+        try:
+            valor = int(valor)
+            if not (minimo <= valor <= maximo):
+                raise ValueError
+            convertidos[campo] = valor
+        except (TypeError, ValueError):
+            erros.append(f"{campo} deve ser inteiro entre {minimo} e {maximo}")
+
+    for campo, (minimo, maximo) in numeros_positivos.items():
+        valor = dados.get(campo)
+        if valor is None:
+            continue
+        try:
+            valor = float(valor)
+            if not (minimo <= valor <= maximo):
+                raise ValueError
+            convertidos[campo] = valor
+        except (TypeError, ValueError):
+            erros.append(f"{campo} deve ser número entre {minimo} e {maximo}")
+
+    detect_shadows = dados.get("detect_shadows")
+    if detect_shadows is not None:
+        if not isinstance(detect_shadows, bool):
+            erros.append("detect_shadows deve ser true ou false")
+        else:
+            convertidos["detect_shadows"] = detect_shadows
+
+    if erros:
+        return jsonify({"ok": False, "erros": erros}), 400
+
+    garantir_estado(video_id)
+    params = estado_videos[video_id]["params_detector"]
+    params.update(convertidos)
+
+    return jsonify({"ok": True, "params_detector": params})
+
+
 # ============================================================================
 # STREAMING MJPEG - um gerador genérico serve OpenCV e YOLO
 # ============================================================================
@@ -346,6 +422,8 @@ def _gerar_stream(video_id, caminho_video, modo):
     detector = _criar_detector(modo)
     tracker = CentroidTracker()
 
+    params_aplicados = dict(estado_videos[video_id].get("params_detector", {}))
+
     # Converte o polígono normalizado (0..1) em coords de pixel no frame redimensionado
     roi_normalizada = estado_videos[video_id].get("roi")
     poligono_pixels = _converter_poligono(roi_normalizada, largura, altura)
@@ -375,6 +453,21 @@ def _gerar_stream(video_id, caminho_video, modo):
                 roi_normalizada = roi_atual
                 contador.poligono = _converter_poligono(roi_atual, largura, altura)
                 contador.resetar()
+
+            # Aplica parâmetros atualizados ao vivo se o usuário mudou.
+            if modo == "opencv":
+                params_atuais = estado_videos[video_id].get("params_detector", {})
+                if params_atuais != params_aplicados:
+                    detector.atualizar_params(
+                        history=params_atuais.get("history"),
+                        var_threshold=params_atuais.get("var_threshold"),
+                        detect_shadows=params_atuais.get("detect_shadows"),
+                        area_minima=params_atuais.get("area_minima"),
+                        area_maxima=params_atuais.get("area_maxima"),
+                        limiar_binario=params_atuais.get("limiar_binario"),
+                        tamanho_kernel=params_atuais.get("tamanho_kernel"),
+                    )
+                    params_aplicados = dict(params_atuais)
 
             # ----- A parte que muda por modo: detectar + rastrear + contar -----
             resultado = detector.processar(frame)
