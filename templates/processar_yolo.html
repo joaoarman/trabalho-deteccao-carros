@@ -1,10 +1,3 @@
-{#
-processar_yolo.html - Tela do modo YOLO (deep learning), agora funcional.
-
-Lado esquerdo: vídeo com bounding boxes do YOLO (stream MJPEG).
-Lado direito: contador + lista de detecções (classe + confiança),
-ambos atualizados por polling - igual ao modo OpenCV.
-#}
 {% extends "base.html" %}
 
 {% block titulo %}YOLO · Contador de Veículos{% endblock %}
@@ -24,10 +17,8 @@ ambos atualizados por polling - igual ao modo OpenCV.
 
 <div class="grade-processar">
 
-    {# Vídeo com bounding boxes do YOLO #}
     <div class="painel-video">
         <div class="video-com-canvas">
-            {# A <img> recebe o stream MJPEG do modo YOLO. #}
             <img class="stream" id="stream-video" src="{{ url_for('stream', video_id=video_id, modo='yolo') }}"
                 alt="Vídeo sendo processado pelo YOLO">
         </div>
@@ -38,7 +29,6 @@ ambos atualizados por polling - igual ao modo OpenCV.
         </div>
     </div>
 
-    {# Painel lateral: contador + lista de detecções #}
     <aside class="painel-lateral">
 
         <div class="contador">
@@ -51,7 +41,6 @@ ambos atualizados por polling - igual ao modo OpenCV.
 
         <div class="lista-deteccoes">
             <h3>Detecções no frame atual</h3>
-            {# Preenchida dinamicamente por JS (inicializarYOLO). #}
             <div id="lista-deteccoes">
                 <p class="deteccoes-vazio">Aguardando detecções…</p>
             </div>

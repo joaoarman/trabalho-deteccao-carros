@@ -1,10 +1,3 @@
-{#
-processar_comparativo.html - Modo comparativo: dois players lado a lado.
-
-Mesmo vídeo, mesma área (ROI), processamentos diferentes. Cada lado tem o
-seu próprio stream e o seu próprio contador, pra evidenciar a diferença
-entre as duas abordagens (OpenCV clássico vs YOLO).
-#}
 {% extends "base.html" %}
 
 {% block titulo %}Comparativo · Contador de Veículos{% endblock %}
@@ -24,7 +17,6 @@ entre as duas abordagens (OpenCV clássico vs YOLO).
 
 <div class="grade-comparativo">
 
-    {# ====== LADO ESQUERDO: OpenCV ====== #}
     <div class="painel-comparativo">
         <div class="rotulo-painel">
             <span class="rotulo-bolinha"></span>
@@ -43,7 +35,6 @@ entre as duas abordagens (OpenCV clássico vs YOLO).
         </div>
     </div>
 
-    {# ====== LADO DIREITO: YOLO ====== #}
     <div class="painel-comparativo">
         <div class="rotulo-painel">
             <span class="rotulo-bolinha" style="background: var(--cor-sucesso);"></span>

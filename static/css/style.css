@@ -161,7 +161,6 @@ p { color: var(--cor-texto-suave); }
     border: 1px solid #fde68a;
 }
 
-/* Tela de upload */
 .hero {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -247,7 +246,6 @@ p { color: var(--cor-texto-suave); }
     margin: 0;
 }
 
-/* Tela de configurar */
 .painel-configurar {
     display: grid;
     grid-template-columns: 1fr;
@@ -353,7 +351,6 @@ p { color: var(--cor-texto-suave); }
 .opcao-modo h3 { color: var(--cor-texto); }
 .opcao-modo p { font-size: 0.875rem; margin: 0; }
 
-/* Tela de processar */
 .cabecalho-processar {
     display: flex;
     justify-content: space-between;
@@ -403,7 +400,6 @@ p { color: var(--cor-texto-suave); }
     gap: 1rem;
 }
 
-/* Cartão do contador */
 .contador {
     background: var(--cor-card);
     border: 1px solid var(--cor-borda);
@@ -429,7 +425,6 @@ p { color: var(--cor-texto-suave); }
     color: var(--cor-texto-suave);
 }
 
-/* Lista de etapas (modo OpenCV) */
 .lista-etapas {
     background: var(--cor-card);
     border: 1px solid var(--cor-borda);
@@ -480,7 +475,6 @@ p { color: var(--cor-texto-suave); }
 }
 .etapa-texto { font-size: 0.875rem; }
 
-/* Navegação por setas entre etapas */
 .navegacao-etapas {
     display: flex;
     justify-content: space-between;
@@ -505,7 +499,6 @@ p { color: var(--cor-texto-suave); }
 }
 .botao-seta:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Descrição da etapa selecionada (canto inferior do vídeo) */
 .descricao-etapa {
     padding: 1rem 1.25rem;
     background: var(--cor-card);
@@ -515,7 +508,6 @@ p { color: var(--cor-texto-suave); }
 }
 .descricao-etapa strong { color: var(--cor-texto); }
 
-/* Lista de detecções (modo YOLO) */
 .lista-deteccoes {
     background: var(--cor-card);
     border: 1px solid var(--cor-borda);
@@ -555,7 +547,6 @@ p { color: var(--cor-texto-suave); }
     padding: 0.5rem 0;
 }
 
-/* Modo comparativo - dois vídeos lado a lado */
 .grade-comparativo {
     display: grid;
     grid-template-columns: 1fr 1fr;

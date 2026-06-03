@@ -1,5 +1,0 @@
-- [core/contador.py](core/contador.py) - Utilizamos Ray Casting para verificar se um ponto está dentro de um polígono.
-- [core/detector_classico.py](core/detector_classico.py) - Utilizamos o algoritmo MOG2 para detectar movimento em frames consecutivos. Utilizamos a morfologia para limpar a máscara binária. Utilizamos o algoritmo findContours para encontrar os contornos dos objetos em movimento.
-- [core/detector_yolo.py](core/detector_yolo.py) - Utilizamos o modelo YOLO pré-treinado em COCO para detectar veículos em frames.
-- [core/leitor_video.py](core/leitor_video.py) - Utilizamos a classe LeitorVideo para ler os frames de um vídeo.
-- [core/tracker.py](core/tracker.py) - Utilizamos o Centroid Tracker para rastrear objetos em frames consecutivos.

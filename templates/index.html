@@ -1,9 +1,3 @@
-{#
-index.html - Tela inicial com formulário de upload.
-
-A sintaxe {% extends %} indica que este template herda do base.html.
-Os {% block %} são os "buracos" que preenchemos.
-#}
 {% extends "base.html" %}
 
 {% block titulo %}Upload de vídeo · Contador de Veículos{% endblock %}
@@ -15,11 +9,8 @@ Os {% block %} são os "buracos" que preenchemos.
         computacional clássica e deep learning.</p>
 </section>
 
-{# Formulário de upload. O atributo enctype="multipart/form-data" é
-OBRIGATÓRIO pra envio de arquivos. action aponta pra rota /upload. #}
 <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="card" id="formulario-upload">
 
-    {# A área inteira é clicável e dispara o input[type=file] escondido. #}
     <label for="campo-video" class="area-upload" id="area-upload">
         <svg class="area-upload-icone" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -30,7 +21,6 @@ OBRIGATÓRIO pra envio de arquivos. action aponta pra rota /upload. #}
         <div class="area-upload-titulo">Clique para escolher um vídeo</div>
         <div class="area-upload-detalhe">ou arraste e solte aqui · MP4, AVI, MOV, MKV, WEBM</div>
 
-        {# accept restringe o seletor de arquivo do navegador a vídeos. #}
         <input type="file" name="video" id="campo-video" accept="video/*" required>
     </label>
 
