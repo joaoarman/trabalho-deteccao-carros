@@ -35,8 +35,14 @@
             <h3>Veículos contados</h3>
             <div class="contador-numero" id="contador-total">0</div>
             <div class="contador-detalhe" id="contador-detalhe">0 por minuto</div>
-            <a href="{{ url_for('configurar', video_id=video_id) }}" class="botao botao-secundario">↻ Alterar área e
-                zerar</a>
+            <div class="contador-acoes">
+                <button type="button" class="botao botao-secundario" id="botao-reiniciar">
+                    ↻ Recomeçar vídeo
+                </button>
+                <a href="{{ url_for('configurar', video_id=video_id) }}" class="botao botao-secundario">
+                    Alterar área
+                </a>
+            </div>
         </div>
 
         <div class="lista-deteccoes">
@@ -45,6 +51,25 @@
                 <p class="deteccoes-vazio">Aguardando detecções…</p>
             </div>
         </div>
+
+        <details class="painel-params-mog2">
+            <summary>Parâmetros do detector</summary>
+
+            <div class="param-corpo">
+                <div class="param-secao-titulo">YOLO</div>
+
+                <div class="param-linha">
+                    <div class="param-cabecalho">
+                        <label for="param-confianca-minima">confiançaMínima</label>
+                        <span class="param-valor" id="param-confianca-minima-valor">{{ "%.2f"|format(params_detector.confianca_minima) }}</span>
+                    </div>
+                    <input type="range" id="param-confianca-minima" min="0.05" max="0.95" step="0.05"
+                        value="{{ params_detector.confianca_minima }}">
+                </div>
+
+                <div class="param-status" id="param-status"></div>
+            </div>
+        </details>
 
     </aside>
 </div>

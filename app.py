@@ -64,6 +64,8 @@ EXTENSOES_PERMITIDAS = {"mp4", "avi", "mov", "mkv", "webm"}
 # de precisão pra contagem.
 LARGURA_PROCESSAMENTO = 960
 
+MODOS_STREAM = {"opencv", "yolo"}
+
 
 def extensao_valida(nome_arquivo: str) -> bool:
     """Retorna True se o nome do arquivo termina com uma extensão permitida."""
@@ -103,15 +105,8 @@ def garantir_estado(video_id: str):
                 "etapa": 5,
                 "contadores": {},
                 "deteccoes": [],
-                "params_detector": {
-                    "history": 500,
-                    "var_threshold": 40,
-                    "detect_shadows": True,
-                    "area_minima": 1500,
-                    "area_maxima": 80000,
-                    "limiar_binario": 254,
-                    "tamanho_kernel": 5,
-                },
+                "params_detector": _params_detector_padrao(),
+                "reiniciar_streams": {"opencv": False, "yolo": False},
             }
 
 
@@ -187,11 +182,15 @@ def processar(video_id, modo):
         flash(f"Modo inválido: {modo}")
         return redirect(url_for("configurar", video_id=video_id))
 
+    garantir_estado(video_id)
+    params_detector = estado_videos[video_id]["params_detector"]
+
     return render_template(
         template,
         video_id=video_id,
         nome_arquivo=os.path.basename(estado["caminho"]),
         modo=modo,
+        params_detector=params_detector,
     )
 
 
@@ -284,11 +283,15 @@ def api_deteccoes(video_id):
     })
 
 
+def _params_detector_padrao():
+    return {**DetectorClassico.params_padrao(), **DetectorYOLO.params_padrao()}
+
+
 @app.route("/api/params/<video_id>", methods=["GET"])
 def api_get_params(video_id):
     """Devolve os parâmetros atuais do detector."""
     estado = estado_videos.get(video_id) or {}
-    return jsonify(estado.get("params_detector", {}))
+    return jsonify(estado.get("params_detector") or _params_detector_padrao())
 
 
 @app.route("/api/params/<video_id>", methods=["POST"])
@@ -305,6 +308,7 @@ def api_set_params(video_id):
     }
     numeros_positivos = {
         "var_threshold": (0.1, 1000),
+        "confianca_minima": (0.01, 0.99),
     }
 
     convertidos = {}
@@ -351,6 +355,33 @@ def api_set_params(video_id):
     return jsonify({"ok": True, "params_detector": params})
 
 
+@app.route("/api/reiniciar/<video_id>", methods=["POST"])
+def api_reiniciar(video_id):
+    """Sinaliza ao stream que deve voltar ao início do vídeo e zerar a contagem."""
+    dados = request.get_json(silent=True) or {}
+    modos = dados.get("modos")
+    if modos is None and dados.get("modo"):
+        modos = [dados["modo"]]
+    if not isinstance(modos, list) or not modos:
+        return jsonify({"ok": False, "erro": "Envie modos: ['opencv'] e/ou ['yolo']."}), 400
+
+    modos_validos = []
+    for modo in modos:
+        if modo not in MODOS_STREAM:
+            return jsonify({"ok": False, "erro": f"Modo inválido: {modo}"}), 400
+        modos_validos.append(modo)
+
+    garantir_estado(video_id)
+    with _lock_estado:
+        flags = estado_videos[video_id].setdefault(
+            "reiniciar_streams", {"opencv": False, "yolo": False}
+        )
+        for modo in modos_validos:
+            flags[modo] = True
+
+    return jsonify({"ok": True, "modos": modos_validos})
+
+
 # ============================================================================
 # STREAMING MJPEG - um gerador genérico serve OpenCV e YOLO
 # ============================================================================
@@ -361,8 +392,6 @@ def api_set_params(video_id):
 #     - como o frame é DESENHADO (etapas do pipeline vs caixas + classes).
 # Por isso temos um único `_gerar_stream` parametrizado pelo `modo`, em vez de
 # duplicar a lógica.
-
-MODOS_STREAM = {"opencv", "yolo"}
 
 
 @app.route("/stream/<video_id>/<modo>")
@@ -385,11 +414,25 @@ def stream(video_id, modo):
     )
 
 
-def _criar_detector(modo):
+def _criar_detector(modo, params=None):
     """Devolve o detector certo pro modo. Cada stream tem o seu (estado próprio)."""
+    params = params or {}
     if modo == "yolo":
-        return DetectorYOLO()
-    return DetectorClassico()
+        padrao = DetectorYOLO.params_padrao()
+        conf = params.get("confianca_minima", padrao["confianca_minima"])
+        return DetectorYOLO(confianca_minima=conf)
+    padrao = DetectorClassico.params_padrao()
+    detector = DetectorClassico()
+    detector.atualizar_params(
+        history=params.get("history", padrao["history"]),
+        var_threshold=params.get("var_threshold", padrao["var_threshold"]),
+        detect_shadows=params.get("detect_shadows", padrao["detect_shadows"]),
+        area_minima=params.get("area_minima", padrao["area_minima"]),
+        area_maxima=params.get("area_maxima", padrao["area_maxima"]),
+        limiar_binario=params.get("limiar_binario", padrao["limiar_binario"]),
+        tamanho_kernel=params.get("tamanho_kernel", padrao["tamanho_kernel"]),
+    )
+    return detector
 
 
 def _gerar_stream(video_id, caminho_video, modo):
@@ -419,10 +462,11 @@ def _gerar_stream(video_id, caminho_video, modo):
         largura, altura = largura_original, altura_original
 
     # Componentes do pipeline - um conjunto por stream (estado isolado).
-    detector = _criar_detector(modo)
+    params_iniciais = estado_videos[video_id].get("params_detector", {})
+    detector = _criar_detector(modo, params_iniciais)
     tracker = CentroidTracker()
 
-    params_aplicados = dict(estado_videos[video_id].get("params_detector", {}))
+    params_aplicados = dict(params_iniciais)
 
     # Converte o polígono normalizado (0..1) em coords de pixel no frame redimensionado
     roi_normalizada = estado_videos[video_id].get("roi")
@@ -434,6 +478,17 @@ def _gerar_stream(video_id, caminho_video, modo):
     try:
         while True:
             inicio_frame = time.time()
+
+            with _lock_estado:
+                flags = estado_videos.get(video_id, {}).get("reiniciar_streams", {})
+                if flags.pop(modo, False):
+                    leitor.reiniciar()
+                    contador.resetar()
+                    tracker = CentroidTracker()
+                    if modo == "opencv":
+                        detector = _criar_detector(modo, params_aplicados)
+                    elif modo == "yolo":
+                        estado_videos[video_id]["deteccoes"] = []
 
             ret, frame = leitor.ler_frame()
             if not ret:
@@ -455,19 +510,29 @@ def _gerar_stream(video_id, caminho_video, modo):
                 contador.resetar()
 
             # Aplica parâmetros atualizados ao vivo se o usuário mudou.
-            if modo == "opencv":
-                params_atuais = estado_videos[video_id].get("params_detector", {})
-                if params_atuais != params_aplicados:
-                    detector.atualizar_params(
-                        history=params_atuais.get("history"),
-                        var_threshold=params_atuais.get("var_threshold"),
-                        detect_shadows=params_atuais.get("detect_shadows"),
-                        area_minima=params_atuais.get("area_minima"),
-                        area_maxima=params_atuais.get("area_maxima"),
-                        limiar_binario=params_atuais.get("limiar_binario"),
-                        tamanho_kernel=params_atuais.get("tamanho_kernel"),
-                    )
-                    params_aplicados = dict(params_atuais)
+            params_atuais = estado_videos[video_id].get("params_detector", {})
+            if modo == "opencv" and params_atuais != params_aplicados:
+                detector.atualizar_params(
+                    history=params_atuais.get("history"),
+                    var_threshold=params_atuais.get("var_threshold"),
+                    detect_shadows=params_atuais.get("detect_shadows"),
+                    area_minima=params_atuais.get("area_minima"),
+                    area_maxima=params_atuais.get("area_maxima"),
+                    limiar_binario=params_atuais.get("limiar_binario"),
+                    tamanho_kernel=params_atuais.get("tamanho_kernel"),
+                )
+                params_aplicados = dict(params_atuais)
+            elif modo == "yolo":
+                padrao_yolo = DetectorYOLO.params_padrao()
+                conf_nova = params_atuais.get(
+                    "confianca_minima", padrao_yolo["confianca_minima"]
+                )
+                conf_velha = params_aplicados.get(
+                    "confianca_minima", padrao_yolo["confianca_minima"]
+                )
+                if conf_nova != conf_velha:
+                    detector.atualizar_params(confianca_minima=conf_nova)
+                    params_aplicados["confianca_minima"] = conf_nova
 
             # ----- A parte que muda por modo: detectar + rastrear + contar -----
             resultado = detector.processar(frame)

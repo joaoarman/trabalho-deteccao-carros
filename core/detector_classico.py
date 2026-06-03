@@ -3,22 +3,39 @@ import cv2
 
 class DetectorClassico:
 
-    AREA_MINIMA_PADRAO = 1500 # px² - menor que isso é ignorado
+    HISTORY_PADRAO = 500
+    VAR_THRESHOLD_PADRAO = 40
+    DETECT_SHADOWS_PADRAO = True
 
-    AREA_MAXIMA_PADRAO = 80000 # px² - maior que isso é ignorado
+    AREA_MINIMA_PADRAO = 1500  # px² - menor que isso é ignorado
+    AREA_MAXIMA_PADRAO = 80000  # px² - maior que isso é ignorado
 
     LIMIAR_BINARIO = 254
-
     TAMANHO_KERNEL = 5
 
+    @classmethod
+    def params_padrao(cls):
+        return {
+            "history": cls.HISTORY_PADRAO,
+            "var_threshold": cls.VAR_THRESHOLD_PADRAO,
+            "detect_shadows": cls.DETECT_SHADOWS_PADRAO,
+            "area_minima": cls.AREA_MINIMA_PADRAO,
+            "area_maxima": cls.AREA_MAXIMA_PADRAO,
+            "limiar_binario": cls.LIMIAR_BINARIO,
+            "tamanho_kernel": cls.TAMANHO_KERNEL,
+        }
+
     def __init__(self):
-        self.area_minima = self.AREA_MINIMA_PADRAO
-        self.area_maxima = self.AREA_MAXIMA_PADRAO
-        self.limiar_binario = self.LIMIAR_BINARIO
-        self.tamanho_kernel = self.TAMANHO_KERNEL
+        padrao = self.params_padrao()
+        self.area_minima = padrao["area_minima"]
+        self.area_maxima = padrao["area_maxima"]
+        self.limiar_binario = padrao["limiar_binario"]
+        self.tamanho_kernel = padrao["tamanho_kernel"]
 
         self.subtrator = cv2.createBackgroundSubtractorMOG2(
-            history=500, varThreshold=40, detectShadows=True
+            history=padrao["history"],
+            varThreshold=padrao["var_threshold"],
+            detectShadows=padrao["detect_shadows"],
         )
 
         self.kernel = cv2.getStructuringElement(

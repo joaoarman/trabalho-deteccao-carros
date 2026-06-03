@@ -237,6 +237,31 @@ function inicializarSelecaoROI() {
 }
 
 /* ----------------------------------------------------------------------------
+   Recomeça o vídeo no stream e zera contagem/tracker (sem recarregar a página).
+   ---------------------------------------------------------------------------- */
+function inicializarBotaoReiniciar(modos) {
+    const botao = document.getElementById("botao-reiniciar");
+    if (!botao) return;
+
+    botao.addEventListener("click", async () => {
+        botao.disabled = true;
+        try {
+            const resp = await fetch(`/api/reiniciar/${window.VIDEO_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ modos }),
+            });
+            const data = await resp.json();
+            if (!data.ok) console.error("Erro ao reiniciar:", data.erro);
+        } catch (err) {
+            console.error("Erro ao reiniciar:", err);
+        } finally {
+            botao.disabled = false;
+        }
+    });
+}
+
+/* ----------------------------------------------------------------------------
    "Navegação ao vivo": ao clicar numa etapa, dispara fetch pro backend.
    O servidor lê esse estado a cada frame do stream e ajusta o display.
    ---------------------------------------------------------------------------- */
@@ -337,6 +362,8 @@ function inicializarPipelineOpenCV() {
     }
     setInterval(atualizarContador, 500);
     atualizarContador(); // executa uma vez imediatamente
+
+    inicializarBotaoReiniciar(["opencv"]);
 }
 
 /* ----------------------------------------------------------------------------
@@ -392,6 +419,58 @@ function inicializarYOLO() {
 
     setInterval(atualizar, 500);
     atualizar();
+
+    inicializarParamsYOLO();
+    inicializarBotaoReiniciar(["yolo"]);
+}
+
+/* ----------------------------------------------------------------------------
+   Controles ao vivo da confiança mínima do YOLO (só no modo YOLO).
+   ---------------------------------------------------------------------------- */
+function inicializarParamsYOLO() {
+    const slider = document.getElementById("param-confianca-minima");
+    const display = document.getElementById("param-confianca-minima-valor");
+    const statusEl = document.getElementById("param-status");
+
+    if (!slider) return;
+
+    let debounceTimer = null;
+
+    function mostrarStatus(ok) {
+        if (!statusEl) return;
+        statusEl.textContent = ok ? "✓ Aplicado" : "Erro ao aplicar";
+        statusEl.style.color = ok ? "var(--cor-sucesso)" : "var(--cor-aviso)";
+        statusEl.style.opacity = "1";
+        clearTimeout(statusEl._fadeTimer);
+        statusEl._fadeTimer = setTimeout(() => { statusEl.style.opacity = "0"; }, 2000);
+    }
+
+    async function enviarParams(confianca_minima) {
+        try {
+            const resp = await fetch(`/api/params/${window.VIDEO_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ confianca_minima }),
+            });
+            const data = await resp.json();
+            mostrarStatus(data.ok);
+        } catch (err) {
+            mostrarStatus(false);
+        }
+    }
+
+    function formatarValor(valor) {
+        return parseFloat(valor).toFixed(2);
+    }
+
+    slider.addEventListener("input", () => {
+        if (display) display.textContent = formatarValor(slider.value);
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(
+            () => enviarParams(parseFloat(slider.value)),
+            400,
+        );
+    });
 }
 
 /* ----------------------------------------------------------------------------
@@ -528,4 +607,6 @@ function inicializarComparativo() {
     }, 500);
     atualizarOpencv();
     atualizarYolo();
+
+    inicializarBotaoReiniciar(["opencv", "yolo"]);
 }

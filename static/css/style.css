@@ -423,6 +423,18 @@ p { color: var(--cor-texto-suave); }
 .contador-detalhe {
     font-size: 0.85rem;
     color: var(--cor-texto-suave);
+    margin-bottom: 0.75rem;
+}
+
+.contador-acoes,
+.comparativo-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.comparativo-acoes {
+    margin-top: 0.75rem;
 }
 
 .lista-etapas {
@@ -513,8 +525,8 @@ p { color: var(--cor-texto-suave); }
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
     padding: 1rem;
-    max-height: 300px;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 .lista-deteccoes h3 {
     font-size: 0.85rem;
@@ -522,6 +534,11 @@ p { color: var(--cor-texto-suave); }
     letter-spacing: 0.05em;
     color: var(--cor-texto-suave);
     margin-bottom: 0.75rem;
+    flex-shrink: 0;
+}
+#lista-deteccoes {
+    height: 240px;
+    overflow-y: auto;
 }
 .deteccao-item {
     display: flex;

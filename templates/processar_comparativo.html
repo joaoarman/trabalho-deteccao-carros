@@ -58,7 +58,14 @@
 <div class="aviso-comparativo">
     Os dois lados usam a <strong>mesma área de contagem</strong>. Diferenças
     no total revelam onde cada abordagem acerta ou erra.
-    <a href="{{ url_for('configurar', video_id=video_id) }}">Alterar área</a>.
+    <div class="comparativo-acoes">
+        <button type="button" class="botao botao-secundario" id="botao-reiniciar">
+            ↻ Recomeçar vídeo
+        </button>
+        <a href="{{ url_for('configurar', video_id=video_id) }}" class="botao botao-secundario">
+            Alterar área
+        </a>
+    </div>
 </div>
 {% endblock %}
 
