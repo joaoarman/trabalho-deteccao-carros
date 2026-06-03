@@ -7,9 +7,9 @@ class DetectorClassico:
 
     AREA_MAXIMA_PADRAO = 80000 # px² - maior que isso é ignorado
 
-    LIMIAR_BINARIO = 254
+    LIMIAR_BINARIO = 254 # acima vira 255, abaixo vira 0
 
-    TAMANHO_KERNEL = 5
+    TAMANHO_KERNEL = 5 # 7x7
 
     def __init__(self):
         self.area_minima = self.AREA_MINIMA_PADRAO
@@ -54,24 +54,26 @@ class DetectorClassico:
             )
 
     def processar(self, frame):
-        # --- Etapa 1: Background Subtraction ---
-        # MOG2 compara o frame com o modelo de fundo aprendido e devolve uma
-        # máscara onde 255 = foreground, 127 = sombra, 0 = fundo.
+
+        # --- Background Subtraction ---
+        # HSV
+        # MOG2 compara o frame com o modelo de fundo aprendido
+        # 255, 127 e 0
         mascara_bruta = self.subtrator.apply(frame)
 
-        # Threshold descarta as sombras (127) — só fica o foreground real (255).
+        # Remove 127
         _, mascara_binaria = cv2.threshold(
-            mascara_bruta, self.limiar_binario, 255, cv2.THRESH_BINARY
+            mascara_bruta, self.limiar_binario, 255, cv2.THRESH_BINARY # regra (acima do limiar é 255, abaixo é 0)
         )
 
-        # --- Etapa 2: Morfologia ---
-        # OPEN (erosão + dilatação): elimina ruído pequeno e pontos isolados.
-        # CLOSE (dilatação + erosão): fecha buracos dentro dos objetos detectados.
+        # --- Etapa 2: Morfologia --- opera em imagens binárias
+        # OPEN -> erosão + dilatação
+        # CLOSE -> dilatação + erosão
         mascara_limpa = cv2.morphologyEx(
             mascara_binaria, cv2.MORPH_OPEN, self.kernel
         )
         mascara_limpa = cv2.morphologyEx(
-            mascara_limpa, cv2.MORPH_CLOSE, self.kernel, iterations=2
+            mascara_limpa, cv2.MORPH_CLOSE, self.kernel
         )
 
         # --- Etapa 3: Detecção de contornos ---
