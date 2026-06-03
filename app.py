@@ -40,6 +40,9 @@ LARGURA_PROCESSAMENTO = 960
 
 MODOS_STREAM = {"opencv", "yolo"}
 
+estado_videos = {}
+_lock_estado = threading.Lock()
+
 
 def extensao_valida(nome_arquivo: str) -> bool:
     if "." not in nome_arquivo:
@@ -65,28 +68,6 @@ def stream(video_id, modo):
         _gerar_stream(video_id, estado["caminho"], modo),
         mimetype="multipart/x-mixed-replace; boundary=frame",
     )
-
-
-def _criar_detector(modo, params=None):
-    """Devolve o detector certo pro modo. Cada stream tem o seu (estado próprio)."""
-    params = params or {}
-    if modo == "yolo":
-        padrao = DetectorYOLO.params_padrao()
-        conf = params.get("confianca_minima", padrao["confianca_minima"])
-        return DetectorYOLO(confianca_minima=conf)
-    padrao = DetectorClassico.params_padrao()
-    detector = DetectorClassico()
-    detector.atualizar_params(
-        history=params.get("history", padrao["history"]),
-        var_threshold=params.get("var_threshold", padrao["var_threshold"]),
-        detect_shadows=params.get("detect_shadows", padrao["detect_shadows"]),
-        area_minima=params.get("area_minima", padrao["area_minima"]),
-        area_maxima=params.get("area_maxima", padrao["area_maxima"]),
-        limiar_binario=params.get("limiar_binario", padrao["limiar_binario"]),
-        tamanho_kernel=params.get("tamanho_kernel", padrao["tamanho_kernel"]),
-    )
-    return detector
-
 
 def _gerar_stream(video_id, caminho_video, modo):
     """Generator que produz frames processados em loop, pro modo escolhido.
@@ -228,8 +209,24 @@ def _gerar_stream(video_id, caminho_video, modo):
         leitor.fechar()
 
 
-estado_videos = {}
-_lock_estado = threading.Lock()
+def _criar_detector(modo, params=None):
+    params = params or {}
+    if modo == "yolo":
+        padrao = DetectorYOLO.params_padrao()
+        conf = params.get("confianca_minima", padrao["confianca_minima"])
+        return DetectorYOLO(confianca_minima=conf)
+    padrao = DetectorClassico.params_padrao()
+    detector = DetectorClassico()
+    detector.atualizar_params(
+        history=params.get("history", padrao["history"]),
+        var_threshold=params.get("var_threshold", padrao["var_threshold"]),
+        detect_shadows=params.get("detect_shadows", padrao["detect_shadows"]),
+        area_minima=params.get("area_minima", padrao["area_minima"]),
+        area_maxima=params.get("area_maxima", padrao["area_maxima"]),
+        limiar_binario=params.get("limiar_binario", padrao["limiar_binario"]),
+        tamanho_kernel=params.get("tamanho_kernel", padrao["tamanho_kernel"]),
+    )
+    return detector
 
 
 def garantir_estado(video_id: str):
