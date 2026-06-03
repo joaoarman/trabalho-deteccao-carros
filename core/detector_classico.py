@@ -91,20 +91,19 @@ class DetectorClassico:
             mascara_binaria, cv2.MORPH_OPEN, self.kernel
         )
         mascara_limpa = cv2.morphologyEx(
-            mascara_limpa, cv2.MORPH_CLOSE, self.kernel
+            mascara_limpa, cv2.MORPH_CLOSE, self.kernel, iterations=2
         )
 
         # --- Etapa 3: Detecção de contornos ---
-        # Encontra as curvas fechadas dos objetos brancos na máscara limpa.
-        # RETR_EXTERNAL ignora contornos internos (buracos); CHAIN_APPROX_SIMPLE
-        # comprime segmentos retos pra economizar memória.
+        # Bordas
+        # RETR_EXTERNAL ignora contornos internos (buracos); 
+        # CHAIN_APPROX_SIMPLE - comprime segmentos retos pra economizar memória.
         contornos, _ = cv2.findContours(
             mascara_limpa, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
 
         # --- Etapa 4: Filtro por área ---
-        # Descarta contornos muito pequenos (ruído residual) e muito grandes
-        # (reflexos, sombras extensas). O que sobra são os candidatos a veículo.
+        # Descarta contornos muito pequenos e muito grandes
         caixas = []
         contornos_validos = []
         for c in contornos:

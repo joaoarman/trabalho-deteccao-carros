@@ -39,8 +39,6 @@ Dilatação: C vira W           se QUALQUER vizinho for W.
 
 ## Após Erosão
 
-Borda exterior eliminada. Pixels adjacentes ao buraco eliminados. Buraco cresce. Ruído apagado.
-
 ```
       0  1  2  3  4  5  6  7  8  9 10 11 12
   0:  .  .  .  .  .  .  .  .  .  .  .  .  .
@@ -58,9 +56,6 @@ Borda exterior eliminada. Pixels adjacentes ao buraco eliminados. Buraco cresce.
 ```
 
 ## Após Dilatação — resultado do OPEN
-
-Borda exterior restaurada. Regiões adjacentes ao buraco restauradas pelas linhas 3 e 8.
-Centro do buraco (linhas 5–6, cols 5–6) **não restaurado** — estava longe demais de qualquer W na erosão.
 
 ```
       0  1  2  3  4  5  6  7  8  9 10 11 12
@@ -84,8 +79,6 @@ Centro do buraco (linhas 5–6, cols 5–6) **não restaurado** — estava longe
 
 ## Após Dilatação
 
-Borda exterior infla 1 pixel para fora. Os W das bordas do buraco se encontram no meio e o fecham.
-
 ```
       0  1  2  3  4  5  6  7  8  9 10 11 12
   0:  .  .  .  .  .  .  .  .  .  .  .  .  .
@@ -103,8 +96,6 @@ Borda exterior infla 1 pixel para fora. Os W das bordas do buraco se encontram n
 ```
 
 ## Após Erosão — `mascara_limpa`
-
-Borda inflada removida. Ex-buraco sobrevive: estava completamente cercado de W → passa no teste.
 
 ```
       0  1  2  3  4  5  6  7  8  9 10 11 12
