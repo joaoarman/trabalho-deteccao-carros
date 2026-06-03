@@ -47,7 +47,7 @@ CLASSES_VEICULOS = {
 }
 
 # Caminho do modelo pré-treinado.
-NOME_MODELO = "yolov8n.pt"
+NOME_MODELO = "yolo26n.pt"
 CAMINHO_MODELO = os.path.join("modelos", NOME_MODELO)
 
 
