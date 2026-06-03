@@ -1,12 +1,5 @@
-# --- Visão computacional e processamento de vídeo ---
 opencv-python>=4.8.0
 numpy>=1.24.0
-
-# --- Deep learning (modo YOLO) ---
 ultralytics>=8.1.0
-
-# --- Interface web ---
 flask>=3.0.0
-
-# --- Auxiliares ---
 pillow>=10.0.0

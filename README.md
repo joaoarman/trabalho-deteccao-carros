@@ -1,82 +1,111 @@
 # Contador de Veículos
 
-Sistema de contagem de veículos por minuto em vídeos, desenvolvido como trabalho da cadeira de **Tópicos Especiais em Computação** (tema: IA / Ciência de Dados).
+Trabalho da cadeira **Tópicos Especiais em Computação** (tema IA / Ciência de Dados). O sistema conta veículos que entram numa região escolhida no vídeo e mostra total acumulado e taxa por minuto.
 
-O sistema implementa **duas abordagens** de detecção e permite compará-las:
+## O que o projeto faz
 
-1. **OpenCV clássico** - pipeline de visão computacional tradicional (background subtraction → morfologia → contornos → tracking).
-2. **YOLO (deep learning)** - modelo pré-treinado no dataset COCO, capaz de detectar `car`, `truck`, `bus` e `motorcycle`.
+1. O usuário envia um vídeo pela interface web.
+2. Desenha um polígono (área de interesse) sobre o preview.
+3. Escolhe um modo de processamento:
+   - **OpenCV clássico**: subtração de fundo, morfologia, contornos e tracking, com visualização das etapas intermediárias.
+   - **YOLO**: detecção com rede pré-treinada (classes car, truck, bus, motorcycle do COCO).
+   - **Comparativo**: os dois pipelines lado a lado no mesmo vídeo.
+4. Acompanha o vídeo processado em tempo quase real (stream MJPEG) e os números do contador.
 
-A interface web (Flask) permite ao usuário enviar um vídeo, selecionar uma região de interesse (ROI), escolher o modo de processamento e acompanhar a contagem em tempo real.
+A contagem usa o **centroide** de cada objeto rastreado. Cada ID é contado uma vez na primeira entrada na área.
 
----
+## Tecnologias
 
-## Setup do ambiente
+| Camada | Stack |
+|--------|--------|
+| Backend | Python 3.10+, Flask |
+| Visão | OpenCV, NumPy |
+| Deep learning | Ultralytics YOLOv8 (modelo `yolov8n`) |
+| Frontend | HTML (Jinja2), CSS, JavaScript |
+
+## Como rodar
 
 ### Pré-requisitos
 
 - Python 3.10 ou superior
-- `pip` instalado e atualizado
+- `pip` atualizado
 
-### 1. Clonar o repositório e entrar na pasta
+### Passos
 
 ```bash
 git clone <url-do-repositorio>
-cd trabalho-topicos
-```
+cd trabalho-deteccao-carros
 
-### 2. Criar e ativar o ambiente virtual
-
-**macOS / Linux:**
-```bash
 python3 -m venv venv
 source venv/bin/activate
-```
 
-**Windows (cmd):**
-```cmd
-python -m venv venv
-venv\Scripts\activate.bat
-```
-
-**Windows (PowerShell):**
-```powershell
-python -m venv venv
-venv\Scripts\Activate.ps1
-```
-
-Quando ativado, o nome do ambiente aparece no início do prompt do terminal (ex: `(venv) $`).
-
-### 3. Atualizar o pip e instalar as dependências
-
-```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+
+python app.py
 ```
 
-### 4. Verificar que tudo está funcionando
+Abra no navegador: **http://127.0.0.1:5000**
+
+Na primeira execução do modo YOLO, o Ultralytics pode baixar `yolov8n.pt` se o arquivo não estiver em `modelos/`.
+
+### Vídeos de teste
+
+A pasta [`samples/`](samples/) traz arquivos `highway-1.mp4` até `highway-5.mp4` para testar upload e contagem sem gravar material próprio.
+
+### Verificação rápida das dependências
 
 ```bash
-python -c "import cv2, numpy, flask; print('OK - bibliotecas carregadas')"
+python <<'PY'
+import cv2, numpy, flask
+print('OK')
+PY
 ```
 
-Se aparecer `OK - bibliotecas carregadas`, o ambiente está pronto.
+## Fluxo completo (resumo)
 
-### 5. Sair do ambiente virtual (quando terminar)
-
-```bash
-deactivate
+```
+Upload (/)  →  salva em uploads/, gera video_id
+      ↓
+Configurar (/configurar/<id>)  →  preview /video/<id>, desenha ROI → POST /api/roi
+      ↓
+Processar (/processar/<id>/<modo>)  →  <img src="/stream/<id>/opencv|yolo">
+      ↓
+Por frame no servidor: LeitorVideo → Detector → Tracker → Contador → JPEG no MJPEG
+      ↓
+Painel lateral: polling GET /api/contador e (no YOLO) GET /api/deteccoes
 ```
 
----
+No modo OpenCV, `POST /api/etapa` troca qual etapa do pipeline aparece no stream (1 a 5). No comparativo, dois streams rodam em paralelo com contadores independentes.
 
-## Estrutura
+## Estrutura do repositório
 
-O projeto é desenvolvido por etapas. A documentação detalhada de cada etapa fica em `docs/`. As decisões globais, convenções e visão do sistema estão no [`CLAUDE.md`](./CLAUDE.md) na raiz.
+```
+app.py                 # Flask, API, streams MJPEG
+core/                  # Leitor, detectores, tracker, contador
+templates/             # Páginas HTML
+static/css, static/js  # Estilo e interação
+uploads/               # Vídeos enviados (criada em runtime)
+samples/               # Vídeos de exemplo
+docs/                  # Documentação detalhada
+```
 
----
+## Documentação detalhada
 
-## Documentação
+- **[Pacote `core`](docs/core/README.md)** - visão do pipeline e índice dos módulos
+  - [leitor_video](docs/core/leitor_video.md)
+  - [detector_classico](docs/core/detector_classico.md)
+  - [detector_yolo](docs/core/detector_yolo.md)
+  - [tracker](docs/core/tracker.md)
+  - [contador](docs/core/contador.md)
+- **[API e frontend](docs/api-frontend.md)** - rotas Flask, estado em memória, streams MJPEG, endpoints JSON e comportamento do `app.js`.
 
-- [`CLAUDE.md`](./CLAUDE.md) - fonte de verdade do projeto (contexto, decisões, fluxo, convenções)
-- [`docs/`](./docs/) - um arquivo `.md` por etapa do desenvolvimento, com explicação didática dos conceitos
+## Estrutura de processamento (OpenCV)
+
+| Etapa | O que aparece |
+|-------|----------------|
+| 1 | Frame original |
+| 2 | Máscara MOG2 |
+| 3 | Máscara após morfologia |
+| 4 | Contornos e caixas |
+| 5 | Tracking, IDs, ROI e contador |

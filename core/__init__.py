@@ -1,3 +1,1 @@
-"""
-Pacote com a lógica de visão computacional do projeto.
-"""
+"""Lógica de visão computacional do contador de veículos."""

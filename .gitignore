@@ -1,31 +1,30 @@
-# --- Python ---
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# --- Ambiente virtual ---
+# Ambiente virtual
 venv/
 env/
 .venv/
 
-# --- Configurações de editor ---
+# Configurações de editor
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# --- Arquivos do sistema operacional ---
+# Arquivos do sistema operacional
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# --- Pastas de runtime do projeto ---
+# Pastas de runtime do projeto
 uploads/
-outputs/
 
-# --- Modelos do YOLO ---
+# Modelos do YOLO
 *.pt
 
-# --- Logs ---
+# Logs
 *.log
