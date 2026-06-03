@@ -237,6 +237,31 @@ function inicializarSelecaoROI() {
 }
 
 /* ----------------------------------------------------------------------------
+   Recomeça o vídeo no stream e zera contagem/tracker (sem recarregar a página).
+   ---------------------------------------------------------------------------- */
+function inicializarBotaoReiniciar(modos) {
+    const botao = document.getElementById("botao-reiniciar");
+    if (!botao) return;
+
+    botao.addEventListener("click", async () => {
+        botao.disabled = true;
+        try {
+            const resp = await fetch(`/api/reiniciar/${window.VIDEO_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ modos }),
+            });
+            const data = await resp.json();
+            if (!data.ok) console.error("Erro ao reiniciar:", data.erro);
+        } catch (err) {
+            console.error("Erro ao reiniciar:", err);
+        } finally {
+            botao.disabled = false;
+        }
+    });
+}
+
+/* ----------------------------------------------------------------------------
    "Navegação ao vivo": ao clicar numa etapa, dispara fetch pro backend.
    O servidor lê esse estado a cada frame do stream e ajusta o display.
    ---------------------------------------------------------------------------- */
@@ -337,6 +362,8 @@ function inicializarPipelineOpenCV() {
     }
     setInterval(atualizarContador, 500);
     atualizarContador(); // executa uma vez imediatamente
+
+    inicializarBotaoReiniciar(["opencv"]);
 }
 
 /* ----------------------------------------------------------------------------
@@ -392,6 +419,58 @@ function inicializarYOLO() {
 
     setInterval(atualizar, 500);
     atualizar();
+
+    inicializarParamsYOLO();
+    inicializarBotaoReiniciar(["yolo"]);
+}
+
+/* ----------------------------------------------------------------------------
+   Controles ao vivo da confiança mínima do YOLO (só no modo YOLO).
+   ---------------------------------------------------------------------------- */
+function inicializarParamsYOLO() {
+    const slider = document.getElementById("param-confianca-minima");
+    const display = document.getElementById("param-confianca-minima-valor");
+    const statusEl = document.getElementById("param-status");
+
+    if (!slider) return;
+
+    let debounceTimer = null;
+
+    function mostrarStatus(ok) {
+        if (!statusEl) return;
+        statusEl.textContent = ok ? "✓ Aplicado" : "Erro ao aplicar";
+        statusEl.style.color = ok ? "var(--cor-sucesso)" : "var(--cor-aviso)";
+        statusEl.style.opacity = "1";
+        clearTimeout(statusEl._fadeTimer);
+        statusEl._fadeTimer = setTimeout(() => { statusEl.style.opacity = "0"; }, 2000);
+    }
+
+    async function enviarParams(confianca_minima) {
+        try {
+            const resp = await fetch(`/api/params/${window.VIDEO_ID}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ confianca_minima }),
+            });
+            const data = await resp.json();
+            mostrarStatus(data.ok);
+        } catch (err) {
+            mostrarStatus(false);
+        }
+    }
+
+    function formatarValor(valor) {
+        return parseFloat(valor).toFixed(2);
+    }
+
+    slider.addEventListener("input", () => {
+        if (display) display.textContent = formatarValor(slider.value);
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(
+            () => enviarParams(parseFloat(slider.value)),
+            400,
+        );
+    });
 }
 
 /* ----------------------------------------------------------------------------
@@ -484,48 +563,4 @@ function inicializarParamsMOG2() {
             enviarParams(coletarPayload());
         });
     }
-}
-
-/* ----------------------------------------------------------------------------
-   Cada lado tem a sua <img> de stream (opencv e yolo). Aqui só fazemos o
-   polling dos dois contadores. Também forçamos a etapa do OpenCV pra 5
-   (tracking + contagem), pra o lado clássico já mostrar o resultado final em
-   vez do frame cru.
-   ---------------------------------------------------------------------------- */
-function inicializarComparativo() {
-    // Garante que o lado OpenCV mostre a etapa final (tracking + contagem).
-    fetch(`/api/etapa/${window.VIDEO_ID}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ etapa: 5 }),
-    }).catch(() => {});
-
-    // Para cada modo, liga o polling do seu contador aos elementos do seu lado.
-    function ligarContador(modo) {
-        const total = document.getElementById(`contador-total-${modo}`);
-        const detalhe = document.getElementById(`contador-detalhe-${modo}`);
-        return async () => {
-            try {
-                const resp = await fetch(
-                    `/api/contador/${window.VIDEO_ID}/${modo}`,
-                );
-                const data = await resp.json();
-                if (total) total.textContent = data.total;
-                if (detalhe)
-                    detalhe.textContent = `${data.por_minuto} por minuto`;
-            } catch (err) {
-                /* silencioso */
-            }
-        };
-    }
-
-    const atualizarOpencv = ligarContador("opencv");
-    const atualizarYolo = ligarContador("yolo");
-
-    setInterval(() => {
-        atualizarOpencv();
-        atualizarYolo();
-    }, 500);
-    atualizarOpencv();
-    atualizarYolo();
 }

@@ -54,16 +54,6 @@
         <p>Detecção via deep learning, com classes (car, truck, bus, motorcycle) e confiança.</p>
     </a>
 
-    <a href="{{ url_for('processar', video_id=video_id, modo='comparativo') }}" class="opcao-modo">
-        <svg class="icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="8" height="16" rx="1" />
-            <rect x="13" y="4" width="8" height="16" rx="1" />
-        </svg>
-        <h3>Comparativo</h3>
-        <p>OpenCV e YOLO processando o mesmo vídeo, lado a lado, com contadores independentes.</p>
-    </a>
-
 </div>
 {% endblock %}
 

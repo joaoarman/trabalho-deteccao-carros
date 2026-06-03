@@ -9,7 +9,6 @@ Trabalho da cadeira **Tópicos Especiais em Computação** (tema IA / Ciência d
 3. Escolhe um modo de processamento:
    - **OpenCV clássico**: subtração de fundo, morfologia, contornos e tracking, com visualização das etapas intermediárias.
    - **YOLO**: detecção com rede pré-treinada (classes car, truck, bus, motorcycle do COCO).
-   - **Comparativo**: os dois pipelines lado a lado no mesmo vídeo.
 4. Acompanha o vídeo processado em tempo quase real (stream MJPEG) e os números do contador.
 
 A contagem usa o **centroide** de cada objeto rastreado. Cada ID é contado uma vez na primeira entrada na área.
@@ -76,7 +75,7 @@ Por frame no servidor: LeitorVideo → Detector → Tracker → Contador → JPE
 Painel lateral: polling GET /api/contador e (no YOLO) GET /api/deteccoes
 ```
 
-No modo OpenCV, `POST /api/etapa` troca qual etapa do pipeline aparece no stream (1 a 5). No comparativo, dois streams rodam em paralelo com contadores independentes.
+No modo OpenCV, `POST /api/etapa` troca qual etapa do pipeline aparece no stream (1 a 5).
 
 ## Estrutura do repositório
 

@@ -47,7 +47,7 @@ CLASSES_VEICULOS = {
 }
 
 # Caminho do modelo pré-treinado.
-NOME_MODELO = "yolov8n.pt"
+NOME_MODELO = "yolo26n.pt"
 CAMINHO_MODELO = os.path.join("modelos", NOME_MODELO)
 
 
@@ -80,9 +80,17 @@ class DetectorYOLO:
     # Confiança mínima pra aceitar uma detecção.
     CONFIANCA_MINIMA = 0.4
 
+    @classmethod
+    def params_padrao(cls):
+        return {"confianca_minima": cls.CONFIANCA_MINIMA}
+
     def __init__(self, confianca_minima: float = CONFIANCA_MINIMA):
         self.confianca_minima = confianca_minima
         self.modelo = _obter_modelo()
+
+    def atualizar_params(self, confianca_minima=None):
+        if confianca_minima is not None:
+            self.confianca_minima = confianca_minima
 
     def processar(self, frame) -> dict:
         """Roda o YOLO num frame e devolve as detecções de veículos.
